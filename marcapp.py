@@ -86,8 +86,13 @@ def show_book(number):
 @app.route('/update/<number>')
 def update_book(number):
 
-    return redirect('/update/'+number)
+    return redirect('/show/'+number)
     
+
+@app.route('/copy/<number>')
+def update_book(number):
+
+    return redirect('/show/'+number)
     
 @app.route('/xxx_show/<number>', methods=['GET', 'POST'])
 def mybooks(number):
