@@ -114,9 +114,15 @@ def update_book(number):
                 continue
             r = connection.execute(sql,
               {'id':litresnum, 'author':author, 'title':name,'field':tag,'info':info})
-    connection.execute("COMMIT;")
+        connection.execute("COMMIT;")
     return redirect('/show/'+number)
 
+litres_special=[u'003     RU-MoLR',
+                u'005     20160201125050.0',
+                u'007     cr^cn^c|||a|cba',
+                u'040     |brus|crumolr$ercr',
+                u'044     |a ru',
+                u'538     |a Системные требования: Adobe Digital Editions']
 
 @app.route('/copy/<number>',methods=['POST'])
 def copy_book(number):
@@ -130,28 +136,23 @@ def copy_book(number):
         connection.execute("START TRANSACTION;")
         connection.execute("DELETE FROM aleph2 WHERE  id=%(id)s",
                         {'id':litresnum})
+        lines = []
+        # фильтруем
         for line in form.card_lines.data.split('\n'):
             if line[:2] is not t(line):
-                tag=line[:5]
-                info=line[5:]
-                tag = re.sub(u'\s+$', '',tag,0)
-                if tag == '':
-                    continue
-                elif tag == '003':
-                    info = u'RU-MoLR'
-                elif tag == '005':
-                    info = u'20160201125050.0'
-                elif tag == '007':
-                    info = u'cr^cn^c|||a|cba'
-                elif tag == '044':
-                    info = u'|a ru'
-                elif tag == '538':
-                    info = u'|a Системные требования: Adobe Digital Editions'
-                else:
-                    info = re.sub(u'^\s+','',info,0)
+                lines.append(line)
+        # добавляем 
+        lines.extend(litres_special)
+        for line in lines:
+            tag=line[:5]
+            info=line[5:]
+            tag = re.sub(u'\s+$', '',tag,0)
+            if tag == '':
+                continue
+            info = re.sub(u'^\s+','',info,0)
             r = connection.execute(sql,
-              {'id':litresnum, 'author':author, 'title':name,'field':tag,'info':info})
-    connection.execute("COMMIT;")
+          {'id':litresnum, 'author':author, 'title':name,'field':tag,'info':info})
+        connection.execute("COMMIT;")
     return redirect('/show/'+number)
 
 @app.route('/xxx_show/<number>', methods=['GET', 'POST'])
