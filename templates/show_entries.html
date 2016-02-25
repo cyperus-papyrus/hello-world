@@ -3,7 +3,7 @@
   {% for book, thelongestcard, excel in mybooks %}
     <h1>{{ excel[0] }}, {{ excel[1] }},  « {{ excel[2] }} », {{ excel[3] }}</h1>
           <h1>Cделать карточку по-литресовски:</h1>
-      <div><form method="POST"><table>
+      <div><form><table>
           {% for longcard in thelongestcard|sort %}
             <tr>
               <td>{{ longcard.field }}</td>

@@ -102,6 +102,7 @@ def show_entries():
     form = MyForm(request.form) # объявляем формы из класса выше
     if request.method == 'POST':
         num = form.hidden.data
+
         print 'num'
         print num, num['id']
         author = num['author']
@@ -137,4 +138,5 @@ def show_entries():
 
 
 if __name__ == '__main__':
+    app.debug = True
     app.run()
