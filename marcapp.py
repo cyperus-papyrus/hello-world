@@ -93,15 +93,19 @@ def update_book(number):
     connection.execute("SET character_set_connection=utf8")
     r = connection.execute("select author,name from excel where (number='%s');" % number) # забираем строчку задания
     (author,name) = r.fetchone();
-    connection.execute("START TRANSACTION;")
     form = MyForm(request.form) # объявляем формы из класса выше
     if request.method == 'POST':
         litresnum = '%0.6i'%int(number) + 'Ru-MoLR'
+        connection.execute("START TRANSACTION;")
+        connection.execute("DELETE FROM aleph2 WHERE  id=%(id)s",
+                        {'id':litresnum})
         for line in form.card_lines.data.split('\n'):
             tag=line[:5]
             info=line[5:]
             tag = re.sub(u'\s+$', '',tag,0)
             info = re.sub(u'^\s+','',info,0)
+            if tag == '':
+                continue
             r = connection.execute(sql,
               {'id':litresnum, 'author':author, 'title':name,'field':tag,'info':info})
     connection.execute("COMMIT;")
