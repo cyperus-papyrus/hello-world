@@ -93,6 +93,7 @@ def update_book(number):
     connection.execute("SET character_set_connection=utf8")
     r = connection.execute("select author,name from excel where (number='%s');" % number) # забираем строчку задания
     (author,name) = r.fetchone();
+    connection.execute("START TRANSACTION;")
     form = MyForm(request.form) # объявляем формы из класса выше
     if request.method == 'POST':
         litresnum = '%0.6i'%int(number) + 'Ru-MoLR'
@@ -103,6 +104,7 @@ def update_book(number):
             info = re.sub(u'^\s+','',info,0)
             r = connection.execute(sql,
               {'id':litresnum, 'author':author, 'title':name,'field':tag,'info':info})
+    connection.execute("COMMIT;")
     return redirect('/show/'+number)
     
 
