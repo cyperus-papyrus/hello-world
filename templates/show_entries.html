@@ -20,7 +20,7 @@
             {% for cardstr in card|sort %}
               <tr>
                 <td>{{ cardstr.field }}</td>
-                <td>{{ form.name(value=cardstr.info) }}</td>
+                <td>{{ form.name(value=cardstr.info) }}{{ form.hidden(value=cardstr.num) }}</td>
               </tr>
             {% endfor %}
           </table>
