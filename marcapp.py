@@ -13,7 +13,7 @@ class MyForm(Form):
     card_lines = TextAreaField(validators=[DataRequired()]) # форма для отрисовки строк в карточках в базе aleph2
     #litres = StringField(validators=[DataRequired()]) # форма для отрисовки новых, литресовских строк
     #hidden = HiddenField('Field 1', validators=[DataRequired()])
-    #submit = SubmitField('Submit', validators=[DataRequired()])
+    submit = SubmitField('Submit', validators=[DataRequired()])
     #copy = SubmitField('Copy card', validators=[DataRequired()]) #пока не работает
 
 
