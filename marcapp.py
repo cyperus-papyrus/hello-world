@@ -143,6 +143,8 @@ def copy_book(number):
                 lines.append(line)
         # добавляем спец. строчки
         lines.extend(litres_special)
+        lines.append(u'001     '+'%0.6i'%int(number))
+        lines.append(u'000     00000nmm^a2200000^i^4500')
         # а теперь засовываем
         for line in lines:
             tag=line[:5]
