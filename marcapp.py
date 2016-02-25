@@ -14,7 +14,7 @@ class MyForm(Form):
     #litres = StringField(validators=[DataRequired()]) # форма для отрисовки новых, литресовских строк
     #hidden = HiddenField('Field 1', validators=[DataRequired()])
     submit = SubmitField('Submit', validators=[DataRequired()])
-    #copy = SubmitField('Copy card', validators=[DataRequired()]) #пока не работает
+    copy = SubmitField('Copy card', validators=[DataRequired()]) #пока не работает
 
 
 engine = create_engine('mysql://marc:123@localhost/marc?charset=utf8',
