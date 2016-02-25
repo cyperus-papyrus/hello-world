@@ -102,7 +102,7 @@ def update_book(number):
             tag = re.sub(u'\s+$', '',tag,0)
             info = re.sub(u'^\s+','',info,0)
             r = connection.execute(sql,
-              {id:litresnum, author:author, title:name,field:tag,info:info})
+              {'id':litresnum, 'author':author, 'title':name,'field':tag,'info':info})
     return redirect('/show/'+number)
     
 
