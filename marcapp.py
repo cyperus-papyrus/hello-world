@@ -139,10 +139,11 @@ def copy_book(number):
         lines = []
         # фильтруем
         for line in form.card_lines.data.split('\n'):
-            if line[:2] is not t(line):
+            if t(line[:2]):
                 lines.append(line)
-        # добавляем 
+        # добавляем спец. строчки
         lines.extend(litres_special)
+        # а теперь засовываем
         for line in lines:
             tag=line[:5]
             info=line[5:]
