@@ -88,7 +88,7 @@ def show_book(number):
        excel=excel,form=form,litrescard=litrescard )
     
 @app.route('/update/<number>')
-def update_book(number):
+def update_book(number,methods=['POST']):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
     r = connection.execute("select author,name from excel where (number='%s');" % number) # забираем строчку задания
@@ -107,7 +107,7 @@ def update_book(number):
     
 
 @app.route('/copy/<number>')
-def copy_book(number):
+def copy_book(number,methods=['POST']):
     pass
     return redirect('/show/'+number)
     
