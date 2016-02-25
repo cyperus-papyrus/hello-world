@@ -6,8 +6,12 @@ from wtforms import StringField, HiddenField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Table
+import re
 
 app = Flask(__name__)
+sql = u"""INSERT IGNORE INTO aleph2 (id, author, title, field, info)
+        VALUES (%(id)s, %(author)s, %(title)s,%(field)s,%(info)s)
+        """ 
 
 class MyForm(Form):
     card_lines = TextAreaField(validators=[DataRequired()]) # форма для отрисовки строк в карточках в базе aleph2
@@ -85,7 +89,20 @@ def show_book(number):
     
 @app.route('/update/<number>')
 def update_book(number):
-    pass
+    connection = engine.connect()
+    connection.execute("SET character_set_connection=utf8")
+    r = connection.execute("select author,name from excel where (number='%s');" % number) # забираем строчку задания
+    (author,name) = r.fetchone();
+    form = MyForm(request.form) # объявляем формы из класса выше
+    if request.method == 'POST':
+        litresnum = '%0.6i'%int(number) + 'Ru-MoLR'
+        for line in form.card_lines.data.split('\n'):
+            tag=line[:5]
+            info=line[5:]
+            tag = re.sub(u'\s+$', '',tag,0)
+            info = re.sub(u'^\s+','',info,0)
+            r = connection.execute(sql,
+              {id:litrsnum, author:author, title:name,field:tag,info:info})
     return redirect('/show/'+number)
     
 
