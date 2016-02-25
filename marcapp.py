@@ -57,7 +57,6 @@ def show_book(number):
             ids.append(idaleph)
         books.append(ids)
     books = filter(None, books) #чистим от пустых списков, которые появляются, если книга не была найдена
-    print number,mystring
     mybooks = [] # тут лежат все карточки на все книги
     thelongestcard = [] # для каждой книги - самая длинная карточка
     n = 0
@@ -70,7 +69,6 @@ def show_book(number):
                 row = dict(id=row[0], author=row[1], title=row[2], field=row[3], info=row[4], num=n)
                 myone_card.append(row) # словарь кладем в myone_card - это одна карточка на одну книгу
                 n += 1
-            print myone_card
             mymulti_cards.append(myone_card) #теперь mymulti_cards - это список карточек для каждой книги
         mybooks.append(mymulti_cards) # теперь mybooks - это список из книг
                                       # в котором лежит список из карточек на книги
