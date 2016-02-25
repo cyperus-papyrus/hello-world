@@ -9,7 +9,6 @@ from sqlalchemy import Table
 
 app = Flask(__name__)
 
-
 class MyForm(Form):
     name = TextAreaField(validators=[DataRequired()]) # форма для отрисовки строк в карточках в базе aleph2
     litres = StringField(validators=[DataRequired()]) # форма для отрисовки новых, литресовских строк
@@ -40,12 +39,14 @@ def show_book(number):
     connection.execute("SET character_set_connection=utf8")
     result = connection.execute("select * from excel where (number='%s');" % number) # забираем строчку задания
     excel = []
-    for row1 in reslut.fetchall():
+    form=MyForm(request.form)
+    for row1 in result.fetchall():
         mystring = [] # собираем эти строки в список
         mystring.append(row1[0]) #номер
         mystring.append(row1[1]) #автор
         mystring.append(row1[2]) #название книги
         mystring.append(row1[7]) #название книги
+        excel.append(mystring)
         books = [] #в этом списке лежат id на все книги (001 и 003 поля)
     for element in excel:
         element = element[0] #выделяем номер для поиска в базе excel2base
@@ -56,7 +57,7 @@ def show_book(number):
             ids.append(idaleph)
         books.append(ids)
     books = filter(None, books) #чистим от пустых списков, которые появляются, если книга не была найдена
-
+    print number,mystring
     mybooks = [] # тут лежат все карточки на все книги
     thelongestcard = [] # для каждой книги - самая длинная карточка
     n = 0
@@ -96,7 +97,7 @@ def show_book(number):
                         print u'Бу!'
                         continue
         thelongestcard.append(tlcl)
-    return render_template('show_entries.html', mybooks=zip(mybooks, thelongestcard, excel), excel=excel, form=form)
+    return render_template('show_entries.html', mybooks=zip(mybooks, thelongestcard, excel), excel=excel,form=form )
     
     
 @app.route('/xxx_show/<number>', methods=['GET', 'POST'])
@@ -203,4 +204,4 @@ def mybooks(number):
 
 if __name__ == '__main__':
     app.debug = True
-    app.run()
+    app.run('0.0.0.0')
