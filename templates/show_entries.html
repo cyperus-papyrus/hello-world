@@ -14,10 +14,10 @@
     <div id="columns">
       {% for card in book %}
         <div id="sidebar">
-          <form method="post"><table>
+          <form method="post" action='/copy/{{ excel[0] }}'><table>
               <tr>
-                <td><textarea width="100" rows="50">{% for strcard in card %}{{ strcard.field }}  {{ strcard.info }}
-{% endfor %}</textarea>{{ form.hidden(value=card) }}</td>
+                <td><textarea width="100" name="card_lines"  rows="50">{% for strcard in card %}{{ strcard.field }}  {{ strcard.info }}
+{% endfor %}</textarea></td>
               </tr>
           </table>
           {{form.copy(value="Копировать карточку!")}}</form>
