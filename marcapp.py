@@ -19,6 +19,12 @@ class MyForm(Form):
     #hidden = HiddenField('Field 1', validators=[DataRequired()])
     submit = SubmitField('Submit', validators=[DataRequired()])
     copy = SubmitField('Copy card', validators=[DataRequired()]) #пока не работает
+    
+def t(n):                                                                                                                                    
+    if n not in ('SID','000','001','003','005','008','017','035','040', 
+    '336','337','338','538','852','979','856','533','SYS','OWN','UID','FMT','CAT','LKR'):                                                        
+        return True                                                                                                                              
+    return False  
 
 
 engine = create_engine('mysql://marc:123@localhost/marc?charset=utf8',
@@ -125,7 +131,7 @@ def copy_book(number):
         connection.execute("DELETE FROM aleph2 WHERE  id=%(id)s",
                         {'id':litresnum})
         for line in form.card_lines.data.split('\n'):
-            if int(line[:2]) is not False:
+            if line[:2] is not t(line):
                 tag=line[:5]
                 info=line[5:]
                 tag = re.sub(u'\s+$', '',tag,0)
