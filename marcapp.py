@@ -11,7 +11,7 @@ import re
 app = Flask(__name__)
 sql = u"""INSERT IGNORE INTO aleph2 (id, author, title, field, info)
         VALUES (%(id)s, %(author)s, %(title)s,%(field)s,%(info)s)
-        """ 
+        """
 
 class MyForm(Form):
     card_lines = TextAreaField(validators=[DataRequired()]) # форма для отрисовки строк в карточках в базе aleph2
@@ -83,10 +83,10 @@ def show_book(number):
     result = connection.execute("SELECT * FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD "% litresnum)
     for (id, author,title, field,info, _) in result.fetchall():
         litrescard.append(dict(field=field,info=info))
-    
-    return render_template('show_entries.html', mybooks=zip(mybooks, litrescard, excel), 
+
+    return render_template('show_entries.html', mybooks=zip(mybooks, litrescard, excel),
        excel=excel,form=form,litrescard=litrescard )
-    
+
 @app.route('/update/<number>',methods=['POST'])
 def update_book(number):
     connection = engine.connect()
@@ -110,13 +110,34 @@ def update_book(number):
               {'id':litresnum, 'author':author, 'title':name,'field':tag,'info':info})
     connection.execute("COMMIT;")
     return redirect('/show/'+number)
-    
+
 
 @app.route('/copy/<number>',methods=['POST'])
 def copy_book(number):
-    pass
+    connection = engine.connect()
+    connection.execute("SET character_set_connection=utf8")
+    r = connection.execute("select author,name from excel where (number='%s');" % number) # забираем строчку задания
+    (author,name) = r.fetchone();
+    form = MyForm(request.form) # объявляем формы из класса выше
+    if request.method == 'POST':
+        litresnum = '%0.6i'%int(number) + 'Ru-MoLR'
+        connection.execute("START TRANSACTION;")
+        connection.execute("DELETE FROM aleph2 WHERE  id=%(id)s",
+                        {'id':litresnum})
+        for line in form.card_lines.data.split('\n'):
+            if int(line[:2]) is not False:
+                tag=line[:5]
+                info=line[5:]
+                tag = re.sub(u'\s+$', '',tag,0)
+                info = re.sub(u'^\s+','',info,0)
+                if tag == '':
+                    continue
+            r = connection.execute(sql,
+              {'id':litresnum, 'author':author, 'title':name,'field':tag,'info':info})
+    connection.execute("COMMIT;")
     return redirect('/show/'+number)
-    
+    return redirect('/show/'+number)
+
 @app.route('/xxx_show/<number>', methods=['GET', 'POST'])
 def mybooks(number):
     connection = engine.connect()
