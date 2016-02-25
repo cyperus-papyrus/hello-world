@@ -6,9 +6,9 @@
   {% for book, thelongestcard, excel in mybooks %}
     <h1>{{ excel[0] }}, {{ excel[1] }},  « {{ excel[2] }} », {{ excel[3] }}</h1>
           <h1>Cделать карточку по-литресовски:</h1>
-      <div><form><textarea rows="30">{% for longcard in thelongestcard|sort %}{{ longcard.field }}   {{ longcard.info }}
+      <div><form action='/update/{{ excel[0] }}'><textarea name="name" rows="50">{% for longcard in litrescard  %}{{ longcard.field }}  {{ longcard.info }}
 {% endfor %}</textarea>
-        {{ form.submit(value="Одобрить карточку!") }}{{ form.hidden(value=thelongestcard[1]) }}</form>
+        {{ form.submit(value="Одобрить карточку:!") }}</form>
       </div>
       <br/>
     <div id="columns">
@@ -16,8 +16,7 @@
         <div id="sidebar">
           <form method="post"><table>
               <tr>
-                <td><textarea rows="50">{% for strcard in card %}{{ strcard.field }}   {{ strcard.info }}
-
+                <td><textarea width="100" rows="50">{% for strcard in card %}{{ strcard.field }}  {{ strcard.info }}
 {% endfor %}</textarea>{{ form.hidden(value=card) }}</td>
               </tr>
           </table>
