@@ -64,12 +64,13 @@ def show_book(number):
     for book in books:
         mymulti_cards = []
         for one_card in book:
-            result = connection.execute("SELECT * FROM marc.aleph2 WHERE (id='%s');" % one_card)
+            result = connection.execute("SELECT * FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD "% one_card)
             myone_card = []
             for row in result.fetchall(): #делаем словарь - одна строка из таблицы aleph2
                 row = dict(id=row[0], author=row[1], title=row[2], field=row[3], info=row[4], num=n)
                 myone_card.append(row) # словарь кладем в myone_card - это одна карточка на одну книгу
                 n += 1
+            print myone_card
             mymulti_cards.append(myone_card) #теперь mymulti_cards - это список карточек для каждой книги
         mybooks.append(mymulti_cards) # теперь mybooks - это список из книг
                                       # в котором лежит список из карточек на книги
