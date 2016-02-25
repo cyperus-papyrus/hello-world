@@ -122,7 +122,8 @@ litres_special=[u'003     RU-MoLR',
                 u'007     cr^cn^c|||a|cba',
                 u'040     |brus|crumolr$ercr',
                 u'044     |a ru',
-                u'538     |a Системные требования: Adobe Digital Editions']
+                u'538     |a Системные требования: Adobe Digital Editions',
+                u'000     00000nmm^a2200000^i^4500']
 
 @app.route('/copy/<number>',methods=['POST'])
 def copy_book(number):
@@ -144,7 +145,6 @@ def copy_book(number):
         # добавляем спец. строчки
         lines.extend(litres_special)
         lines.append(u'001     '+'%0.6i'%int(number))
-        lines.append(u'000     00000nmm^a2200000^i^4500')
         # а теперь засовываем
         for line in lines:
             tag=line[:5]
