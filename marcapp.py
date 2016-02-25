@@ -136,7 +136,6 @@ def copy_book(number):
               {'id':litresnum, 'author':author, 'title':name,'field':tag,'info':info})
     connection.execute("COMMIT;")
     return redirect('/show/'+number)
-    return redirect('/show/'+number)
 
 @app.route('/xxx_show/<number>', methods=['GET', 'POST'])
 def mybooks(number):
