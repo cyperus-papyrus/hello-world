@@ -10,13 +10,13 @@
               <td>{{ form.litres(value=longcard.info) }}</td></tr>
           {% endfor %}
         </table>
-        {{ form.litres(value="Одобрить карточку!") }}{{ form.hidden(value=thelongestcard[1]) }}</form>
+        {{ form.submit(value="Одобрить карточку!") }}{{ form.hidden(value=thelongestcard[1]) }}</form>
       </div>
       <br/>
     <div id="columns">
       {% for card in book %}
         <div id="sidebar">
-          <table>
+          <form><table>
             {% for cardstr in card|sort %}
               <tr>
                 <td>{{ cardstr.field }}</td>
@@ -24,7 +24,7 @@
               </tr>
             {% endfor %}
           </table>
-          <form>{{form.name(value="Копировать карточку!")}}</form>
+          {{form.copy(value="Копировать карточку!")}}</form>
         </div>
       {% endfor %}
     </div>
