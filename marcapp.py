@@ -84,7 +84,7 @@ def show_book(number):
        excel=excel,form=form,litrescard=litrescard )
     
 @app.route('/update/<number>')
-def update_book(number)
+def update_book(number):
 
     return redirect('/update/'+number)
     
