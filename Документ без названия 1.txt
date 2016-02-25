@@ -1,0 +1,41 @@
+{'info': '', 'marker': '', 'isbn': '978-985-18-2042-5', 'field': 'xxx'}
+{'info': '', 'marker': '', 'isbn': '978-985-18-1494-3', 'field': 'xxx'}
+
+{'info': '4#$a ???$b FB$j 2? 26/13$x 70', 'marker': '4#', 'isbn': '978-985-16-9404-0', 'field': '852'}
+{'info': '##$a ???????????? ??? ?????', 'marker': '##', 'isbn': '978-985-16-9404-0', 'field': '653'}
+{'info': '#7$a ??????? ??????????$2 rubbk', 'marker': '#7', 'isbn': '978-985-16-9404-0', 'field': '650'}
+{'info': '##$a ?? ???. ???. ?? ??????', 'marker': '##', 'isbn': '978-985-16-9404-0', 'field': '500'}
+{'info': '20110902104537.0', 'marker': '', 'isbn': '978-985-16-9404-0', 'field': '005'}
+{'info': '004993482', 'marker': '', 'isbn': '978-985-16-9404-0', 'field': '001'}
+{'info': '01076nam#a2200229#i#4500', 'marker': '', 'isbn': '978-985-16-9404-0', 'field': '000'}
+
+{'info': '##$a ???$b ORF$x 82', 'marker': '##', 'isbn': '978-985-16-6619-1', 'field': '852'}
+{'info': '##$a ???$b FB$j 3 12-31/40$x 70', 'marker': '##', 'isbn': '978-985-16-6619-1', 'field': '852'}
+{'info': '1#$a ?????, ??????? ????????????$e ????.', 'marker': '1#', 'isbn': '978-985-16-6619-1', 'field': '700'}
+{'info': '##$a 383 ?.$c 21 ??', 'marker': '##', 'isbn': '978-985-16-6619-1', 'field': '300'}
+{'info': '##$a ?????$b ???????$c ???. 2012', 'marker': '##', 'isbn': '978-985-16-6619-1', 'field': '260'}
+
+m_isbn = 1й ISBN
+1 строку насильно засовываем в список 0
+n = 0
+cards = []
+for row in result.fetchall(): (со второй строки)
+    n_isbn = row[0]
+    if m_isbn == p_isbn:
+        n.append(row)
+    else:
+    cards.append(n)
+    n += 1
+    n.append(row)
+    m_isbn = n_isbn
+
+for wish in result:
+    wish_dict = {
+        'Id': wish[0],
+        'Title': wish[1],
+        'Description': wish[2],
+        'FilePath': wish[3],
+        'Like':wish[4]}
+    wishes_dict.append(wish_dict)
+
+Должно выйти: [ [{}, {}, {}], [{}, {}], [{}, {}, {}, {}] ]
