@@ -77,7 +77,7 @@ def show_book(number):
     litrescard = [] # из карточек для каждой книги находим самую длинную и сохраняем ее
     litresnum = '%0.6i'%int(s) + 'Ru-MoLR'
     result = connection.execute("SELECT * FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD "% litresnum)
-    for (id, author,title, field,info, _) in result.fetchall()
+    for (id, author,title, field,info, _) in result.fetchall():
         litrescard.append(dict(field=field,info=info))
     
     return render_template('show_entries.html', mybooks=zip(mybooks, litrescard, excel), 
