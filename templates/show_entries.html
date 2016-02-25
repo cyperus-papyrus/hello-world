@@ -1,15 +1,13 @@
 {% extends "layout.html" %}
 {% block body %}
+{% for e in excel %}
+  {{ e[0] }} {{ e[1] }} {{ e[2] }}
+{% endfor %}
   {% for book, thelongestcard, excel in mybooks %}
     <h1>{{ excel[0] }}, {{ excel[1] }},  « {{ excel[2] }} », {{ excel[3] }}</h1>
           <h1>Cделать карточку по-литресовски:</h1>
-      <div><form><table>
-          {% for longcard in thelongestcard|sort %}
-            <tr>
-              <td>{{ longcard.field }}</td>
-              <td>{{ form.litres(value=longcard.info) }}</td></tr>
-          {% endfor %}
-        </table>
+      <div><form><textarea rows="30">{% for longcard in thelongestcard|sort %}{{ longcard.field }}   {{ longcard.info }}
+{% endfor %}</textarea>
         {{ form.submit(value="Одобрить карточку!") }}{{ form.hidden(value=thelongestcard[1]) }}</form>
       </div>
       <br/>
@@ -17,12 +15,11 @@
       {% for card in book %}
         <div id="sidebar">
           <form method="post"><table>
-            {% for cardstr in card|sort %}
               <tr>
-                <td>{{ cardstr.field }}</td>
-                <td>{{ form.name(value=cardstr.info) }}{{ form.hidden(value=cardstr.num) }}</td>
+                <td><textarea rows="50">{% for strcard in card %}{{ strcard.field }}   {{ strcard.info }}
+
+{% endfor %}</textarea>{{ form.hidden(value=card) }}</td>
               </tr>
-            {% endfor %}
           </table>
           {{form.copy(value="Копировать карточку!")}}</form>
         </div>

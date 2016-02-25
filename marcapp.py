@@ -2,7 +2,7 @@
 from flask import Flask, render_template, request
 from sqlalchemy import create_engine, MetaData
 from wtforms import Form
-from wtforms import StringField, HiddenField, SubmitField
+from wtforms import StringField, HiddenField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Table
@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 
 class MyForm(Form):
-    name = StringField(validators=[DataRequired()]) # форма для отрисовки строк в карточках в базе aleph2
+    name = TextAreaField(validators=[DataRequired()]) # форма для отрисовки строк в карточках в базе aleph2
     litres = StringField(validators=[DataRequired()]) # форма для отрисовки новых, литресовских строк
     hidden = HiddenField('Field 1', validators=[DataRequired()])
     submit = SubmitField('Submit', validators=[DataRequired()])
@@ -35,8 +35,8 @@ def hello():
     return render_template('index.html')
 
 
-@app.route('/show/20', methods=['GET', 'POST'])
-def show_entries():
+@app.route('/show/<number>', methods=['GET', 'POST'])
+def mybooks(number):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
     result = connection.execute('select * from excel order by number limit 1') #выбираем первые 10 строк из таблицы excel
@@ -134,7 +134,7 @@ def show_entries():
     # if request.method == 'POST' and request.form['form-name'] == 'Submit':
     if request.method == 'GET' and form.validate():
         form.litres.data = mybooks[1][1][1]'''
-    return render_template('show_entries.html', mybooks=zip(mybooks, thelongestcard, excel), form=form)
+    return render_template('show_entries.html', mybooks=zip(mybooks, thelongestcard, excel), excel=excel, form=form)
 
 
 if __name__ == '__main__':
