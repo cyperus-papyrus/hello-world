@@ -6,7 +6,7 @@
   {% for book, thelongestcard, excel in mybooks %}
     <h1>{{ excel[0] }}, {{ excel[1] }},  « {{ excel[2] }} », {{ excel[3] }}</h1>
           <h1>Cделать карточку по-литресовски:</h1>
-      <div><form action='/update/{{ excel[0] }}' method="post"><textarea name="card_lines" rows="50">{% for longcard in litrescard  %}{{ longcard.field }}   {{ longcard.info }}
+      <div><form action='/update/{{ excel[0] }}' method="post"><textarea name="card_lines" rows="120">{% for longcard in litrescard  %}{{ longcard.field }}   {{ longcard.info }}
 {% endfor %}</textarea>
         {{ form.submit(value="Одобрить карточку:!") }}</form>
       </div>
