@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 from sqlalchemy import create_engine, MetaData
 from wtforms import Form
 from wtforms import StringField, HiddenField, SubmitField, TextAreaField
@@ -74,29 +74,19 @@ def show_book(number):
                                       # в котором лежит список из карточек на книги
                                       # в котором лежат списки на каждую карточку
                                       # в которых словари-строчки каждой карточки
-        thelongestcardlst = [] # из карточек для каждой книги находим самую длинную и сохраняем ее
-        for i in mymulti_cards:
-            a = len(i)
-            thelongestcardlst.append(a)
-        el = max(thelongestcardlst)
-        ind = thelongestcardlst.index(el)
-        thelongestcardonelst = mymulti_cards[int(ind)]
-        tlcl = []
-        for h in thelongestcardonelst:
-            lrcard = dict(id=h['id'], author=h['author'], title=h['title'], field=h['field'], info='', num=h['num'])
-            tlcl.append(lrcard)
-        for r in tlcl:
-            hh = r['field']
-            non = ['CAT', 'SYS', 'FMT', 'OWN'] #попытка удалить ненужные филды - не проходит, например из 4х CAT удаляет только два
-            for no in non:
-                if hh == no:
-                    try:
-                        tlcl.remove(r)
-                    except:
-                        print u'Бу!'
-                        continue
-        thelongestcard.append(tlcl)
-    return render_template('show_entries.html', mybooks=zip(mybooks, thelongestcard, excel), excel=excel,form=form )
+    litrescard = [] # из карточек для каждой книги находим самую длинную и сохраняем ее
+    litresnum = '%0.6i'%int(s) + 'Ru-MoLR'
+    result = connection.execute("SELECT * FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD "% litresnum)
+    for (id, author,title, field,info, _) in result.fetchall()
+        litrescard.append(dict(field=field,info=info))
+    
+    return render_template('show_entries.html', mybooks=zip(mybooks, litrescard, excel), 
+       excel=excel,form=form,litrescard=litrescard )
+    
+@app.route('/update/<number>')
+def update_book(number)
+
+    return redirect('/update/'+number)
     
     
 @app.route('/xxx_show/<number>', methods=['GET', 'POST'])
