@@ -87,8 +87,8 @@ def show_book(number):
     return render_template('show_entries.html', mybooks=zip(mybooks, litrescard, excel), 
        excel=excel,form=form,litrescard=litrescard )
     
-@app.route('/update/<number>')
-def update_book(number,methods=['POST']):
+@app.route('/update/<number>',methods=['POST'])
+def update_book(number):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
     r = connection.execute("select author,name from excel where (number='%s');" % number) # забираем строчку задания
@@ -106,8 +106,8 @@ def update_book(number,methods=['POST']):
     return redirect('/show/'+number)
     
 
-@app.route('/copy/<number>')
-def copy_book(number,methods=['POST']):
+@app.route('/copy/<number>',methods=['POST'])
+def copy_book(number):
     pass
     return redirect('/show/'+number)
     
