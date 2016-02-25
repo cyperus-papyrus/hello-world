@@ -16,7 +16,7 @@
     <div id="columns">
       {% for card in book %}
         <div id="sidebar">
-          <form><table>
+          <form method="post"><table>
             {% for cardstr in card|sort %}
               <tr>
                 <td>{{ cardstr.field }}</td>
