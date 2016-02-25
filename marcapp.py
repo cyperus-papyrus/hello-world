@@ -135,9 +135,20 @@ def copy_book(number):
                 tag=line[:5]
                 info=line[5:]
                 tag = re.sub(u'\s+$', '',tag,0)
-                info = re.sub(u'^\s+','',info,0)
                 if tag == '':
                     continue
+                elif tag == '003':
+                    info = u'RU-MoLR'
+                elif tag == '005':
+                    info = u'20160201125050.0'
+                elif tag == '007':
+                    info = u'cr^cn^c|||a|cba'
+                elif tag == '044':
+                    info = u'|a ru'
+                elif tag == '538':
+                    info = u'|a Системные требования: Adobe Digital Editions'
+                else:
+                    info = re.sub(u'^\s+','',info,0)
             r = connection.execute(sql,
               {'id':litresnum, 'author':author, 'title':name,'field':tag,'info':info})
     connection.execute("COMMIT;")
