@@ -159,13 +159,13 @@ def copy_book(number):
         for i in litres_special:
             if i[:3] == '856' and frmt == 'epub':
                 epub_str = u'application/epub+zip'
-                new = i % (filename, epub_str)
+                new = i % (str(filename), str(epub_str))
                 j = litres_special.index(i)
                 litres_special.remove(i)
                 litres_special.insert(j, new)
             if i[:3] == '856' and frmt == 'pdf':
                 pdf_str = u'application/pdf'
-                new = i % (filename, pdf_str)
+                new = i % (str(filename), str(pdf_str))
                 j = litres_special.index(i)
                 litres_special.remove(i)
                 litres_special.insert(j, new)
@@ -186,12 +186,11 @@ def copy_book(number):
     return redirect('/show/' + number)
 
 
-@app.route('/xxx_show/<number>', methods=['GET', 'POST'])
-def mybooks(number):
+@app.route('/show', methods=['GET', 'POST'])
+def excel(number):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
-    result = connection.execute(
-        'select * from excel order by number limit 1')  # выбираем первые 10 строк из таблицы excel
+    result = connection.execute('select number from excel order by number')
     excel = []
     for row1 in result.fetchall():
         mystring = []  # собираем эти строки в список
