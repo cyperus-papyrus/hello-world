@@ -79,11 +79,6 @@ aleph2 = Table('aleph2', metadata, autoload=True)
 
 @app.route('/')
 def index():
-    return 'Index Page'
-
-
-@app.route('/hello')
-def hello():
     return render_template('index.html')
 
 
