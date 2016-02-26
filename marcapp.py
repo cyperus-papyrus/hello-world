@@ -7,6 +7,7 @@ from wtforms.validators import DataRequired
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Table
 import re
+from math import ceil
 
 app = Flask(__name__)
 sql = u"""INSERT IGNORE INTO aleph2 (id, author, title, field, info)
@@ -22,12 +23,51 @@ class MyForm(Form):
     copy = SubmitField('Copy card', validators=[DataRequired()])  # пока не работает
 
 
+class Pagination(object):
+
+    def __init__(self, page, per_page, total_count):
+        self.page = page
+        self.per_page = per_page
+        self.total_count = total_count
+
+    @property
+    def pages(self):
+        return int(ceil(self.total_count / float(self.per_page)))
+
+    @property
+    def has_prev(self):
+        return self.page > 1
+
+    @property
+    def has_next(self):
+        return self.page < self.pages
+
+    def iter_pages(self, left_edge=2, left_current=2,
+                   right_current=5, right_edge=2):
+        last = 0
+        for num in xrange(1, self.pages + 1):
+            if num <= left_edge or \
+               (num > self.page - left_current - 1 and num < self.page + right_current) or \
+               num > self.pages - right_edge:
+                if last + 1 != num:
+                    yield None
+                yield num
+                last = num
+
+
 def t(n):
     if n not in ('SID', '000', '001', '003', '005', '008', '017', '035', '040',
                  '336', '337', '338', '538', '852', '912', '979', '856', '533', 'SYS', 'OWN', 'UID', 'FMT', 'CAT',
                  'LKR'):
         return True
     return False
+
+
+def url_for_other_page(page):
+    args = request.view_args.copy()
+    args['page'] = page
+    return url_for(request.endpoint, **args)
+app.jinja_env.globals['url_for_other_page'] = url_for_other_page
 
 
 engine = create_engine('mysql://marc:123@localhost/marc?charset=utf8',
@@ -179,8 +219,11 @@ def copy_book(number):
     return redirect('/show/' + number)
 
 
-@app.route('/show', methods=['GET', 'POST'])
-def excel():
+PER_PAGE = 20
+
+@app.route('/show/', defaults={'page': 1}, methods=['GET', 'POST'])
+@app.route('/show/page/<int:page>')
+def excel(page):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
     result = connection.execute('select number, author, name from excel order by number limit 100')
@@ -196,8 +239,10 @@ def excel():
             books.append(element)
         else:
             continue
-    print books
-    return render_template('show.html', excel=books)
+    count = len(books)
+    # users = get_users_for_page(page, PER_PAGE, count)
+    pagination = Pagination(page, PER_PAGE, count)
+    return render_template('show.html', pagination=pagination, excel=books)
 
 if __name__ == '__main__':
     app.debug = True
