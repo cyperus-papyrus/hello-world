@@ -120,7 +120,7 @@ def update_book(number):
 litres_special=[u'003     RU-MoLR',
                 u'005     20160201125050.0',
                 u'007     cr^cn^c|||a|cba',
-                u'040     |brus|crumolr$ercr',
+                u'040     |b rus |c rumolr |e rcr',
                 u'044     |a ru',
                 u'538     |a Системные требования: Adobe Digital Editions',
                 u'000     00000nmm^a2200000^i^4500']
