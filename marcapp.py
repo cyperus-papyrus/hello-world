@@ -135,7 +135,6 @@ litres_special = [u'003     RU-MoLR',
                   u'044     |a ru',
                   u'538     |a Системные требования: Adobe Digital Editions',
                   u'000     00000nmm^a2200000^i^4500',
-                  u'8561^   |a rsl.ru |f %s |n Российская государственная библиотека, Москва, РФ |q %s',
                   u'979^^   |a dluniv |a dlopen']
 
 
@@ -156,19 +155,11 @@ def copy_book(number):
         for line in form.card_lines.data.split('\n'):
             if t(line[:3]):
                 lines.append(line)
-        for i in litres_special:
-            if i[:3] == '856' and frmt == 'epub':
-                epub_str = u'application/epub+zip'
-                new = i % (str(filename), str(epub_str))
-                j = litres_special.index(i)
-                litres_special.remove(i)
-                litres_special.insert(j, new)
-            if i[:3] == '856' and frmt == 'pdf':
-                pdf_str = u'application/pdf'
-                new = i % (str(filename), str(pdf_str))
-                j = litres_special.index(i)
-                litres_special.remove(i)
-                litres_special.insert(j, new)
+        mime_str = u'application/pdf'
+        if frmt == 'epub':
+           mime_str = u'application/epub+zip'
+        litres_special.append(
+                  u'8561^   |a rsl.ru |f %s |n Российская государственная библиотека, Москва, РФ |q %s'%(filename,mime_str))
         # добавляем спец. строчки
         lines.extend(litres_special)
         lines.append(u'001     ' + '%0.6i' % int(number))
