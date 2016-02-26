@@ -181,7 +181,7 @@ def copy_book(number):
 def excel():
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
-    result = connection.execute('select number, author, name from excel order by number limit 10')
+    result = connection.execute('select number, author, name from excel order by number limit 100')
     excel = []
     for row in result.fetchall():
         excel.append(row)
