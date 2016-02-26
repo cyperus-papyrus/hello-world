@@ -159,13 +159,13 @@ def copy_book(number):
         for i in litres_special:
             if i[:3] == '856' and frmt == 'epub':
                 epub_str = u'application/epub+zip'
-                new = i % (frmt, epub_str)
+                new = i % (filename, epub_str)
                 j = litres_special.index(i)
                 litres_special.remove(i)
                 litres_special.insert(j, new)
             if i[:3] == '856' and frmt == 'pdf':
                 pdf_str = u'application/pdf'
-                new = i % (frmt, pdf_str)
+                new = i % (filename, pdf_str)
                 j = litres_special.index(i)
                 litres_special.remove(i)
                 litres_special.insert(j, new)
