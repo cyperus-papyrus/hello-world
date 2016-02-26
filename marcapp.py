@@ -153,10 +153,10 @@ def copy_book(number):
         lines = []
         # фильтруем
         for line in form.card_lines.data.split('\n'):
+            if line[:3] == '245':
+                line = re.sub(u'\|h \[[Тт]екст\] :', u'|h [Электронный ресурс] :', line)
             if t(line[:3]):
                 lines.append(line)
-            elif line[:3] == '245':
-                line = re.sub(u'\|h \[[Тт]екст\] :', u'|h [Электронный ресурс] :', line)
         mime_str = u'application/pdf'
         if frmt == 'epub':
            mime_str = u'application/epub+zip'
