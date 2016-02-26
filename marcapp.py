@@ -55,9 +55,9 @@ def show_book(number):
         mystring.append(row1[0]) #номер
         mystring.append(row1[1]) #автор
         mystring.append(row1[2]) #название книги
-        mystring.append(row1[7]) #название книги
+        mystring.append(row1[7]) #isbn
         excel.append(mystring)
-        books = [] #в этом списке лежат id на все книги (001 и 003 поля)
+    books = [] #в этом списке лежат id на все книги (001 и 003 поля)
     for element in excel:
         element = element[0] #выделяем номер для поиска в базе excel2base
         result = connection.execute("SELECT * FROM marc.excel2base WHERE (number='%s');" % element)
@@ -89,8 +89,8 @@ def show_book(number):
     result = connection.execute("SELECT id, author,title, field,info,info_text FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD "% litresnum)
     for (id, author,title, field,info,info_text) in result.fetchall():
         litrescard.append(dict(field='%-5s'%field,info=info))
-
-    return render_template('show_entries.html', mybooks=zip(mybooks, litrescard, excel),
+    #print litresnum,litrescard
+    return render_template('show_entries.html', mybooks=zip(mybooks,excel),
        excel=excel,form=form,litrescard=litrescard )
 
 @app.route('/update/<number>',methods=['POST'])
