@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
   {% for ex, bo in excel %}
-   <p>{{ ex[0] }} {{ ex[1] }} {{ ex[2] }} {{ ex[3] }} {{ ex[4] }} {{ bo }}</p>
+   <p>{{ ex[0] }} {{ ex[1] }} {{ ex[2] }} {{ ex[3] }} {{ ex[4] }} <a href="/show/{{ ex[0] }}">{{ bo }}</a></p>
   {% endfor %}
 {% endblock %}
