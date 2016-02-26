@@ -37,7 +37,7 @@ textarea        { width: 400px; }
 
 #columns {
     display: table;
-    width: 100;
+    width: 100%;
     box-sizing: border-box;  /* не поддерживается в CSS2 */
     margin-left: 0;
     margin-right: 0;
