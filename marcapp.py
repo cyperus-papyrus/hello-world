@@ -155,6 +155,8 @@ def copy_book(number):
         for line in form.card_lines.data.split('\n'):
             if t(line[:3]):
                 lines.append(line)
+            elif line[:3] == '245':
+                line = re.sub(u'\|h \[[Тт]екст\] :', u'|h [Электронный ресурс] :', line)
         mime_str = u'application/pdf'
         if frmt == 'epub':
            mime_str = u'application/epub+zip'
@@ -187,15 +189,15 @@ def excel():
         excel.append(row)
     books = []  # в этом списке лежат id на все книги (001 и 003 поля)
     for element in excel:
-        element = element[0]  # выделяем номер для поиска в базе excel2base
-        result = connection.execute("SELECT * FROM marc.excel2base WHERE (number='%s');" % element)
+        element0 = element[0]  # выделяем номер для поиска в базе excel2base
+        result = connection.execute("SELECT * FROM marc.excel2base WHERE (number='%s');" % element0)
         l = []
         if result.fetchall() != l:
-            books.append(u'Есть карточка')
+            books.append(element)
         else:
-            books.append(u'Нет карточки')
+            continue
     print books
-    return render_template('show.html', excel=zip(excel, books))
+    return render_template('show.html', excel=books)
 
 if __name__ == '__main__':
     app.debug = True
