@@ -76,7 +76,7 @@ def show_book(number):
             result = connection.execute("SELECT * FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD "% one_card)
             myone_card = []
             for row in result.fetchall(): #делаем словарь - одна строка из таблицы aleph2
-                row = dict(id=row[0], author=row[1], title=row[2], field='%5s'%row[3], info=row[4], num=n)
+                row = dict(id=row[0], author=row[1], title=row[2], field='%-5s'%row[3], info=row[4], num=n)
                 myone_card.append(row) # словарь кладем в myone_card - это одна карточка на одну книгу
                 n += 1
             mymulti_cards.append(myone_card) #теперь mymulti_cards - это список карточек для каждой книги
@@ -88,7 +88,7 @@ def show_book(number):
     litresnum = '%0.6i'%int(number) + 'Ru-MoLR'
     result = connection.execute("SELECT id, author,title, field,info,info_text FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD "% litresnum)
     for (id, author,title, field,info,info_text) in result.fetchall():
-        litrescard.append(dict(field='%5s'%field,info=info))
+        litrescard.append(dict(field='%-5s'%field,info=info))
 
     return render_template('show_entries.html', mybooks=zip(mybooks, litrescard, excel),
        excel=excel,form=form,litrescard=litrescard )
