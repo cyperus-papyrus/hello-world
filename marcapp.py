@@ -109,7 +109,7 @@ def show_book(number):
             idaleph = row[1]  # из всех найденных строк выделяем idaleph и отправляем в список ids
             ids.append(idaleph)
         books.append(ids)
-    books = filter(None, books)  # чистим от пустых списков, которые появляются, если книга не была найдена
+    # books = filter(None, books)  # чистим от пустых списков, которые появляются, если книга не была найдена
     mybooks = []  # тут лежат все карточки на все книги
     thelongestcard = []  # для каждой книги - самая длинная карточка
     n = 0
@@ -134,6 +134,7 @@ def show_book(number):
     for (id, author, title, field, info, info_text) in result.fetchall():
         litrescard.append(dict(field='%-5s' % field, info=info))
     # print litresnum,litrescard
+    print mybooks
     return render_template('show_entries.html', mybooks=zip(mybooks, excel),
                            excel=excel, form=form, litrescard=litrescard)
 
@@ -234,10 +235,7 @@ def excel(number):
             check = (u'Книга обработана!',)
         else:
             check = ('',)
-        if result1.fetchall() != l:
-            books.append(element + check)
-        else:
-            continue
+        books.append(element + check)
     print books
     next_number = int(number) + 1
     if next_number > 56:

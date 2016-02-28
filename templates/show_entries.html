@@ -6,9 +6,10 @@
           <h2>Cделать карточку по-литресовски:</h2>
       <div><form action='/update/{{ excel[0] }}' method="post"><textarea class="new_card" name="card_lines" rows="30">{% for longcard in litrescard  %}{{ longcard.field }}  {{ longcard.info }}
 {% endfor %}</textarea>
-        {{ form.submit(value="Одобрить карточку:!") }}</form>
+        {{ form.submit(value="Одобрить карточку!") }}</form>
       </div>
       <br/>
+   {% if book %}
     <div id="columns">
       {% for card in book %}
         <div id="sidebar">
@@ -21,6 +22,12 @@
           {{form.copy(value="Копировать карточку!")}}</form>
         </div>
       {% endfor %}
+        {% else %}
+        <h1>Нет карточек!</h1>
+        <p>К сожалению, в базе данных нет карточек для такой книги.</p>
+        <p>Вы можете создать ее самостоятельно, воспользовавшись шаблоном для создания marc21-карт ЛитРес:</p>
+        <form method="post" action='/copy/{{ excel[0] }}'>{{form.copy(value="Создать карточку!")}}</form>
+        {% endif %}
     </div>
     <br />
     <hr>
