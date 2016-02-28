@@ -2,7 +2,7 @@
 {% block body %}
   {% for book,excel  in mybooks %}
     <h1>{{ excel[1] }},  « {{ excel[2] }} »</h1>
-        <h2>Номер {{ excel[0] }}, {{ excel[3] }}, файл: {{ excel[5] }}, {{ excel[6] }}</h2>
+        <h2>Номер {{ excel[0] }}, {{ excel[3] }}, файл: {{ excel[5] }}, {{ excel[7] }}</h2>
           <h2>Cделать карточку по-литресовски:</h2>
       <div><form action='/update/{{ excel[0] }}' method="post"><textarea class="new_card" name="card_lines" rows="30">{% for longcard in litrescard  %}{{ longcard.field }}  {{ longcard.info }}
 {% endfor %}</textarea>
