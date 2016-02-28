@@ -232,7 +232,11 @@ def excel(number):
         else:
             continue
     next_number = int(number) + 1
+    if next_number > 56:
+        next_number = 56
     prev_number = int(number) - 1
+    if prev_number < 0:
+        prev_number = 0
     return render_template('show.html', excel=books, number1=next_number, number2=prev_number)
 
 if __name__ == '__main__':
