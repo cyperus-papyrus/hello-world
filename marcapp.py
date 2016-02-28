@@ -130,7 +130,7 @@ def show_book(number):
     litrescard = []  # из карточек для каждой книги находим самую длинную и сохраняем ее
     litresnum = '%0.6i' % int(number) + 'Ru-MoLR'
     result = connection.execute(
-        "SELECT id, author,title, field,info,info_text FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD " % litresnum)
+        "SELECT id, author, title, field, info, info_text FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD " % litresnum)
     for (id, author, title, field, info, info_text) in result.fetchall():
         litrescard.append(dict(field='%-5s' % field, info=info))
     # print litresnum,litrescard
@@ -225,12 +225,20 @@ def excel(number):
     books = []  # в этом списке лежат id на все книги (001 и 003 поля)
     for element in excel:
         element0 = element[0]  # выделяем номер для поиска в базе excel2base
-        result = connection.execute("SELECT * FROM marc.excel2base WHERE (number='%s');" % element0)
+        result1 = connection.execute("SELECT * FROM marc.excel2base WHERE (number='%s');" % element0)
+        litresnum = '%0.6i' % int(element0) + 'Ru-MoLR'
+        result2 = connection.execute("select * from aleph2 where (id='%s');" % litresnum)
         l = []
-        if result.fetchall() != l:
-            books.append(element)
+        element = tuple(element)
+        if result2.fetchall() != l:
+            check = (u'Книга обработана!',)
+        else:
+            check = ('',)
+        if result1.fetchall() != l:
+            books.append(element + check)
         else:
             continue
+    print books
     next_number = int(number) + 1
     if next_number > 56:
         next_number = 56
