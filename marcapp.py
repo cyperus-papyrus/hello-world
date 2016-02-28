@@ -214,7 +214,7 @@ def copy_book(number):
     return redirect('/show/' + number)
 
 
-@app.route('/show/list/<number>', methods=['GET', 'POST'])
+@app.route('/list/<number>', methods=['GET', 'POST'])
 def excel(number):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
