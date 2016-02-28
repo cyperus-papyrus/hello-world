@@ -214,14 +214,11 @@ def copy_book(number):
     return redirect('/show/' + number)
 
 
-PER_PAGE = 20
-
-@app.route('/show/', defaults={'page': 1}, methods=['GET', 'POST'])
-@app.route('/show/page/<int:page>')
-def excel(page):
+@app.route('/show/list/<number>', methods=['GET', 'POST'])
+def excel(number):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
-    result = connection.execute('select number, author, name from excel order by number limit 100')
+    result = connection.execute('select number, author, name from excel limit %s00,100;' % number)
     excel = []
     for row in result.fetchall():
         excel.append(row)
@@ -234,10 +231,9 @@ def excel(page):
             books.append(element)
         else:
             continue
-    count = len(books)
-    # users = get_users_for_page(page, PER_PAGE, count)
-    pagination = Pagination(page, PER_PAGE, count)
-    return render_template('show.html', pagination=pagination, excel=books)
+    next_number = int(number) + 1
+    prev_number = int(number) - 1
+    return render_template('show.html', excel=books, number1=next_number, number2=prev_number)
 
 if __name__ == '__main__':
     app.debug = True
