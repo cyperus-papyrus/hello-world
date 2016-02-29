@@ -13,6 +13,7 @@ sql = u"""INSERT IGNORE INTO aleph2 (id, author, title, field, info, info_text)
         VALUES (%(id)s, %(author)s, %(title)s,%(field)s,%(info)s,%(info_text)s)
         """
 
+
 class MyForm(Form):
     card_lines = TextAreaField(validators=[DataRequired()])  # форма для отрисовки строк в карточках в базе aleph2
     # litres = StringField(validators=[DataRequired()]) # форма для отрисовки новых, литресовских строк
@@ -72,7 +73,7 @@ def show_book(number):
         result = connection.execute("SELECT * FROM marc.excel2base WHERE (number='%s');" % element)
         ids = []
         for row in result.fetchall():
-            idaleph = row[1]  # из всех найденных строк выделяем idaleph и отправляем в список ids
+            idaleph = row[0]  # из всех найденных строк выделяем idaleph и отправляем в список ids
             ids.append(idaleph)
         books.append(ids)
     # books = filter(None, books)  # чистим от пустых списков, которые появляются, если книга не была найдена
