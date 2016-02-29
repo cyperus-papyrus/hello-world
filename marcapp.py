@@ -143,8 +143,8 @@ litres_special = [u'003     RU-MoLR',
 def copy_book(number):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
-    r = connection.execute("select author, name, format, filename from excel where (number='%s');" % number)  # забираем строчку задания
-    (author, name, frmt, filename) = r.fetchone()
+    r = connection.execute("select author, name, format, filename, isbn from excel where (number='%s');" % number)  # забираем строчку задания
+    (author, name, frmt, filename, isbn) = r.fetchone()
     form = MyForm(request.form)  # объявляем формы из класса выше
     if request.method == 'POST':
         litresnum = '%0.6i' % int(number) + 'Ru-MoLR'
@@ -163,6 +163,7 @@ def copy_book(number):
            mime_str = u'application/epub+zip'
         litres_special.append(
                   u'8561^   |a rsl.ru |f %s |n Российская государственная библиотека, Москва, РФ |q %s'%(filename,mime_str))
+        litres_special.append(u'020     |a %s'%isbn)
         # добавляем спец. строчки
         lines.extend(litres_special)
         lines.append(u'001     ' + '%0.6i' % int(number))
