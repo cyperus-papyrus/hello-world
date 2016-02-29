@@ -10,10 +10,9 @@ import re
 from math import ceil
 
 app = Flask(__name__)
-sql = u"""INSERT IGNORE INTO aleph2 (id, author, title, field, info)
-        VALUES (%(id)s, %(author)s, %(title)s,%(field)s,%(info)s)
+sql = u"""INSERT IGNORE INTO aleph2 (id, author, title, field, info, info_text)
+        VALUES (%(id)s, %(author)s, %(title)s,%(field)s,%(info)s,%(info_text)s)
         """
-
 
 class MyForm(Form):
     card_lines = TextAreaField(validators=[DataRequired()])  # форма для отрисовки строк в карточках в базе aleph2
@@ -111,7 +110,6 @@ def show_book(number):
         books.append(ids)
     # books = filter(None, books)  # чистим от пустых списков, которые появляются, если книга не была найдена
     mybooks = []  # тут лежат все карточки на все книги
-    thelongestcard = []  # для каждой книги - самая длинная карточка
     n = 0
     for book in books:
         mymulti_cards = []
@@ -119,7 +117,7 @@ def show_book(number):
             result = connection.execute("SELECT * FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD " % one_card)
             myone_card = []
             for row in result.fetchall():  # делаем словарь - одна строка из таблицы aleph2
-                row = dict(id=row[0], author=row[1], title=row[2], field='%-5s' % row[3], info=row[4], num=n)
+                row = dict(id=row[0], author=row[1], title=row[2], field='%-5s' % row[3], info=row[5], num=n)
                 myone_card.append(row)  # словарь кладем в myone_card - это одна карточка на одну книгу
                 n += 1
             mymulti_cards.append(myone_card)  # теперь mymulti_cards - это список карточек для каждой книги
@@ -130,11 +128,9 @@ def show_book(number):
     litrescard = []  # из карточек для каждой книги находим самую длинную и сохраняем ее
     litresnum = '%0.6i' % int(number) + 'Ru-MoLR'
     result = connection.execute(
-        "SELECT id, author, title, field, info, info_text FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD " % litresnum)
-    for (id, author, title, field, info, info_text) in result.fetchall():
-        litrescard.append(dict(field='%-5s' % field, info=info))
-    # print litresnum,litrescard
-    print mybooks
+        "SELECT id, author, title, field, info_text FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD " % litresnum)
+    for (id, author, title, field, info_text) in result.fetchall():
+        litrescard.append(dict(field='%-5s' % field, info=info_text))
     return render_template('show_entries.html', mybooks=zip(mybooks, excel),
                            excel=excel, form=form, litrescard=litrescard)
 
@@ -153,13 +149,14 @@ def update_book(number):
                            {'id': litresnum})
         for line in form.card_lines.data.split('\n'):
             tag = line[:5]
-            info = line[5:]
+            info = line[5:250]
+            info_text = line[5:]
             tag = re.sub(u'\s+$', '', tag, 0)
             info = re.sub(u'^\s+', '', info, 0)
             if tag == '':
                 continue
             r = connection.execute(sql,
-                                   {'id': litresnum, 'author': author, 'title': name, 'field': tag, 'info': info})
+                                   {'id': litresnum, 'author': author, 'title': name, 'field': tag, 'info': info, 'info_text': info_text})
         connection.execute("COMMIT;")
     return redirect('/show/' + number)
 
@@ -204,13 +201,15 @@ def copy_book(number):
         # а теперь засовываем
         for line in lines:
             tag = line[:5]
-            info = line[5:]
+            info = line[5:255]
+            info_text = line[5:]
             tag = re.sub(u'\s+$', '', tag, 0)
             if tag == '':
                 continue
             info = re.sub(u'^\s+', '', info, 0)
+            info_text = re.sub(u'^\s+', '', info_text, 0)
             r = connection.execute(sql,
-                                   {'id': litresnum, 'author': author, 'title': name, 'field': tag, 'info': info})
+                                   {'id': litresnum, 'author': author, 'title': name, 'field': tag, 'info': info, 'info_text': info_text})
         connection.execute("COMMIT;")
     return redirect('/show/' + number)
 
