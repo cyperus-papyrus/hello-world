@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
   {% for ex in excel %}
-   <li class="excel"><a href="/show/{{ ex[0] }}" class="excel">{{ ex[0] }} {{ ex[1] }} {{ ex[2] }}</a> {% if ex[3] %} {{ex[3]}} {% endif %} </li><br>
+   <li class="excel"><a href="/show/{{ ex[0] }}" class="excel">{{ ex[0] }} {{ ex[1] }} {{ ex[2] }}</a> {{ex[3]}} <span style="color: #A63C18">{{ex[4]}}</span></li><br>
   {% endfor %}
 <div align="center"><a href="/list/{{ number2 }}" style="color: #A63C18">Предыдущая страница</a> | <a href="/list/{{ number1 }}" style="color: #A63C18">Следующая страница</a></div>
 {% endblock %}

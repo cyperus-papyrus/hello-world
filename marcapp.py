@@ -7,7 +7,6 @@ from wtforms.validators import DataRequired
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Table
 import re
-from math import ceil
 
 app = Flask(__name__)
 sql = u"""INSERT IGNORE INTO aleph2 (id, author, title, field, info, info_text)
@@ -20,38 +19,6 @@ class MyForm(Form):
     # hidden = HiddenField('Field 1', validators=[DataRequired()])
     submit = SubmitField('Submit', validators=[DataRequired()])
     copy = SubmitField('Copy card', validators=[DataRequired()])  # пока не работает
-
-
-class Pagination(object):
-
-    def __init__(self, page, per_page, total_count):
-        self.page = page
-        self.per_page = per_page
-        self.total_count = total_count
-
-    @property
-    def pages(self):
-        return int(ceil(self.total_count / float(self.per_page)))
-
-    @property
-    def has_prev(self):
-        return self.page > 1
-
-    @property
-    def has_next(self):
-        return self.page < self.pages
-
-    def iter_pages(self, left_edge=2, left_current=2,
-                   right_current=5, right_edge=2):
-        last = 0
-        for num in xrange(1, self.pages + 1):
-            if num <= left_edge or \
-               (num > self.page - left_current - 1 and num < self.page + right_current) or \
-               num > self.pages - right_edge:
-                if last + 1 != num:
-                    yield None
-                yield num
-                last = num
 
 
 def t(n):
@@ -222,19 +189,23 @@ def excel(number):
     excel = []
     for row in result.fetchall():
         excel.append(row)
-    books = []  # в этом списке лежат id на все книги (001 и 003 поля)
+    books = []
     for element in excel:
         element0 = element[0]  # выделяем номер для поиска в базе excel2base
         result1 = connection.execute("SELECT * FROM marc.excel2base WHERE (number='%s');" % element0)
         litresnum = '%0.6i' % int(element0) + 'Ru-MoLR'
         result2 = connection.execute("select * from aleph2 where (id='%s');" % litresnum)
-        l = []
         element = tuple(element)
-        if result2.fetchall() != l:
-            check = (u'Книга обработана!',)
+        l = []
+        if result1.fetchall() != l:
+            check_rgb = ('',)
         else:
-            check = ('',)
-        books.append(element + check)
+            check_rgb = (u'Нет найденных карточек!',)
+        if result2.fetchall() != l:
+            check_lr = (u'Книга обработана!',)
+        else:
+            check_lr = ('',)
+        books.append(element + check_lr + check_rgb)
     print books
     next_number = int(number) + 1
     if next_number > 56:
