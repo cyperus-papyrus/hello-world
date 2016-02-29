@@ -129,7 +129,9 @@ def update_book(number):
     return redirect('/show/' + number)
 
 
-litres_special = [u'003     RU-MoLR',
+@app.route('/copy/<number>', methods=['POST'])
+def copy_book(number):
+    litres_special = [u'003     RU-MoLR',
                   u'005     20160201125050.0',
                   u'007     cr^cn^c|||a|cba',
                   u'040     |b rus |c rumolr |e rcr',
@@ -137,10 +139,6 @@ litres_special = [u'003     RU-MoLR',
                   u'538     |a Системные требования: Adobe Digital Editions',
                   u'000     00000nmm^a2200000^i^4500',
                   u'979^^   |a dluniv |a dlopen']
-
-
-@app.route('/copy/<number>', methods=['POST'])
-def copy_book(number):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
     r = connection.execute("select author, name, format, filename, isbn from excel where (number='%s');" % number)  # забираем строчку задания
