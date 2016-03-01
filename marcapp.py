@@ -126,6 +126,7 @@ def update_book(number):
         connection.execute("DELETE FROM aleph2 WHERE  id=%(id)s",
                            {'id': litresnum})
         for line in form.card_lines.data.split('\n'):
+            line = re.sub(u'\t',u'   ',line,0) # копипейст с сайта ргб могут быть табуляции
             tag = line[:5]
             info = line[5:250]
             info_text = line[5:]
