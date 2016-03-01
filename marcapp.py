@@ -63,10 +63,10 @@ def show_book(number):
         mystring.append(row1[1])  # автор
         mystring.append(row1[2])  # название книги
         mystring.append(row1[3])  # издательство
-        mystring.append(row1[4])  # расширение
-        mystring.append(row1[5])  # название файла
-        mystring.append(row1[6])  # размер файла
-        mystring.append(row1[7])  # isbn
+        mystring.append(row1[4])  # ISBN
+        mystring.append(row1[5])  # формат файла
+        mystring.append(row1[6])  # название файла
+        mystring.append(row1[7])  # размер файла
         excel.append(mystring)
     books = []  # в этом списке лежат id на все книги (001 и 003 поля)
     for element in excel:
@@ -102,7 +102,6 @@ def show_book(number):
         litrescard.append(dict(field='%-5s' % field, info=info_text))
     bibkomcard = []  # из карточек для каждой книги находим самую длинную и сохраняем ее
     bibkomtitle = excel[0][2]
-    bibkomlike = str(u'%BIBKOM')
     sql = "SELECT * FROM marc.bibkom  WHERE id LIKE :string and (title='%s') ORDER BY FIELD;" % bibkomtitle
     result_bibkom = connection.execute(text(sql),string="%BIBKOM")
     for row_bibkom in result_bibkom.fetchall():
