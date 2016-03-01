@@ -7,6 +7,7 @@ from wtforms.validators import DataRequired
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Table
 import re
+from sqlalchemy import text
 
 app = Flask(__name__)
 sql = u"""INSERT IGNORE INTO aleph2 (id, author, title, field, info, info_text)
@@ -73,7 +74,7 @@ def show_book(number):
         result = connection.execute("SELECT * FROM marc.excel2base WHERE (number='%s');" % element)
         ids = []
         for row in result.fetchall():
-            idaleph = row[0]  # из всех найденных строк выделяем idaleph и отправляем в список ids
+            idaleph = row[1]  # из всех найденных строк выделяем idaleph и отправляем в список ids
             ids.append(idaleph)
         books.append(ids)
     # books = filter(None, books)  # чистим от пустых списков, которые появляются, если книга не была найдена
@@ -99,8 +100,18 @@ def show_book(number):
         "SELECT id, author, title, field, info_text FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD " % litresnum)
     for (id, author, title, field, info_text) in result.fetchall():
         litrescard.append(dict(field='%-5s' % field, info=info_text))
+    bibkomcard = []  # из карточек для каждой книги находим самую длинную и сохраняем ее
+    bibkomtitle = excel[0][2]
+    bibkomlike = str(u'%BIBKOM')
+    sql = "SELECT * FROM marc.bibkom  WHERE id LIKE :string and (title='%s') ORDER BY FIELD;" % bibkomtitle
+    result_bibkom = connection.execute(text(sql),string="%BIBKOM")
+    for row_bibkom in result_bibkom.fetchall():
+        field_bib =row_bibkom[3]
+        info_bib = row_bibkom[5]
+        bibkomcard.append(dict(field='%-5s' % field_bib, info=info_bib))
+    print bibkomcard
     return render_template('show_entries.html', mybooks=zip(mybooks, excel),
-                           excel=excel, form=form, litrescard=litrescard)
+                           excel=excel, form=form, litrescard=litrescard, bibkomcard=bibkomcard)
 
 
 @app.route('/update/<number>', methods=['POST'])

@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-  {% for book,excel  in mybooks %}
+  {% for book, excel in mybooks %}
     <h1>{{ excel[1] }},  « {{ excel[2] }} »</h1>
         <h2>Номер {{ excel[0] }}, {{ excel[3] }}, файл: {{ excel[5] }}, {{ excel[7] }}</h2>
           <h2>Cделать карточку по-литресовски:</h2>
@@ -27,6 +27,17 @@
         <p>К сожалению, в базе данных нет карточек для такой книги.</p>
         <p>Вы можете создать ее самостоятельно, воспользовавшись шаблоном для создания marc21-карт ЛитРес:</p>
         <form method="post" action='/copy/{{ excel[0] }}'>{{form.copy(value="Создать карточку!")}}</form>
+        {% endif %}
+        {% if bibkomcard %}
+        <div id="sidebar">
+          <form method="post" action='/copy/{{ excel[0] }}'><table>
+              <tr>
+                <td><textarea name="card_lines"  rows="50">{% for strbibcard in bibkomcard %}{{ strbibcard.field }}  {{ strbibcard.info }}
+{% endfor %}</textarea></td>
+              </tr>
+          </table>
+          {{form.copy(value="Копировать карточку!")}}</form>
+        </div>
         {% endif %}
     </div>
     <br />
