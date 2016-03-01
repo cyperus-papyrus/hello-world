@@ -131,6 +131,7 @@ def update_book(number):
             info_text = line[5:]
             tag = re.sub(u'\s+$', '', tag, 0)
             info = re.sub(u'^\s+', '', info, 0)
+            info_text = re.sub(u'^\s+', '', info_text, 0)
             if tag == '':
                 continue
             r = connection.execute(sql,
