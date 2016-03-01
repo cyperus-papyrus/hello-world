@@ -47,7 +47,7 @@ aleph2 = Table('aleph2', metadata, autoload=True)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return redirect('/list/0')
 
 
 @app.route('/show/<number>')
@@ -74,7 +74,7 @@ def show_book(number):
         result = connection.execute("SELECT * FROM marc.excel2base WHERE (number='%s');" % element)
         ids = []
         for row in result.fetchall():
-            idaleph = row[1]  # из всех найденных строк выделяем idaleph и отправляем в список ids
+            idaleph = row[0]  # из всех найденных строк выделяем idaleph и отправляем в список ids
             ids.append(idaleph)
         books.append(ids)
     # books = filter(None, books)  # чистим от пустых списков, которые появляются, если книга не была найдена
@@ -102,7 +102,7 @@ def show_book(number):
         litrescard.append(dict(field='%-5s' % field, info=info_text))
     bibkomcard = []  # из карточек для каждой книги находим самую длинную и сохраняем ее
     bibkomtitle = excel[0][2]
-    sql = "SELECT * FROM marc.bibkom  WHERE id LIKE :string and (title='%s') ORDER BY FIELD;" % bibkomtitle
+    sql = "SELECT * FROM marc.aleph2  WHERE id LIKE :string and (title='%s') ORDER BY FIELD;" % bibkomtitle
     result_bibkom = connection.execute(text(sql),string="%BIBKOM")
     for row_bibkom in result_bibkom.fetchall():
         field_bib =row_bibkom[3]
@@ -146,6 +146,59 @@ def copy_book(number):
                   u'007     cr^cn^c|||a|cba',
                   u'040     |b rus |c rumolr |e rcr',
                   u'044     |a ru',
+                  u'538     |a Системные требования: Adobe Digital Editions',
+                  u'000     00000nmm^a2200000^i^4500',
+                  u'979^^   |a dluniv |a dlopen']
+    connection = engine.connect()
+    connection.execute("SET character_set_connection=utf8")
+    r = connection.execute("select author, name, format, filename, isbn from excel where (number='%s');" % number)  # забираем строчку задания
+    (author, name, frmt, filename, isbn) = r.fetchone()
+    form = MyForm(request.form)  # объявляем формы из класса выше
+    if request.method == 'POST':
+        litresnum = '%0.6i' % int(number) + 'Ru-MoLR'
+        connection.execute("START TRANSACTION;")
+        connection.execute("DELETE FROM aleph2 WHERE  id=%(id)s",
+                           {'id': litresnum})
+        lines = []
+        # фильтруем
+        for line in form.card_lines.data.split('\n'):
+            if line[:3] == '245':
+                line = re.sub(u'\|h \[[Тт]екст\] :', u'|h [Электронный ресурс] :', line)
+            if t(line[:3]):
+                lines.append(line)
+        mime_str = u'application/pdf'
+        if frmt == 'epub':
+           mime_str = u'application/epub+zip'
+        litres_special.append(
+                  u'8561^   |a rsl.ru |f %s |n Российская государственная библиотека, Москва, РФ |q %s'%(filename,mime_str))
+        litres_special.append(u'020     |a %s'%isbn)
+        # добавляем спец. строчки
+        lines.extend(litres_special)
+        lines.append(u'001     ' + '%0.6i' % int(number))
+        # а теперь засовываем
+        for line in lines:
+            tag = line[:5]
+            info = line[5:255]
+            info_text = line[5:]
+            tag = re.sub(u'\s+$', '', tag, 0)
+            if tag == '':
+                continue
+            info = re.sub(u'^\s+', '', info, 0)
+            info_text = re.sub(u'^\s+', '', info_text, 0)
+            r = connection.execute(sql,
+                                   {'id': litresnum, 'author': author, 'title': name, 'field': tag, 'info': info, 'info_text': info_text})
+        connection.execute("COMMIT;")
+    return redirect('/show/' + number)
+
+
+@app.route('/create/<number>', methods=['POST'])
+def create_book(number):
+    litres_special = [u'003     RU-MoLR',
+                  u'005     20160201125050.0',
+                  u'007     cr^cn^c|||a|cba',
+                  u'040     |b rus |c rumolr |e rcr',
+                  u'044     |a ru',
+                  u'0410    |a rus',
                   u'538     |a Системные требования: Adobe Digital Editions',
                   u'000     00000nmm^a2200000^i^4500',
                   u'979^^   |a dluniv |a dlopen']
