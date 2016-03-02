@@ -167,7 +167,7 @@ def copy_book(number):
             if line[:3] == '245':
                 line1 = re.search(u'[\|]+h +\[*[Тт]+екст\]* +[\|:]', line)
                 if line1 is not None:
-                    line = re.sub(u'[\|] +\[*[Тт]+екст\]* [\|:]+', u'|h [Электронный ресурс] |', line)
+                    line = re.sub(u'[\|]+h +\[*[Тт]+екст\]* [\|:]+', u'|h [Электронный ресурс] |', line)
                 else:
                     line2 = re.search(u'([$|]a [^$|]+)', line)
                     line_into = line2.group(0) + u' |h [Электронный ресурс] '
