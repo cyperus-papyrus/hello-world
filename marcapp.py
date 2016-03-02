@@ -108,7 +108,7 @@ def show_book(number):
         field_bib =row_bibkom[3]
         info_bib = row_bibkom[5]
         bibkomcard.append(dict(field='%-5s' % field_bib, info=info_bib))
-    r_int = connection.execute("select count(*) from excel e where e.number<=%s order by number" % number)
+    r_int = connection.execute("select count(*) from excel e where e.number<=%s" % number)
     list_int = int(r_int.fetchall()) / 100
     list_int = int(list_int)
     print list_int
@@ -260,7 +260,7 @@ def create_book(number):
 def excel(number):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
-    result = connection.execute('select number, author, name from excel limit %s00,100 order by number;' % number)
+    result = connection.execute('select number, author, name from excel limit %s00,100;' % number)
     excel = []
     for row in result.fetchall():
         excel.append(row)
