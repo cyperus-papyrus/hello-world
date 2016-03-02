@@ -108,8 +108,11 @@ def show_book(number):
         field_bib =row_bibkom[3]
         info_bib = row_bibkom[5]
         bibkomcard.append(dict(field='%-5s' % field_bib, info=info_bib))
+    (result_count,) = connection.execute("select count(*) from excel e where e.number<=%s order by number" % number)
+    my_list_int = (int(result_count[0]) - 1) / 100
+    print int(result_count[0])
     return render_template('show_entries.html', mybooks=zip(mybooks, excel),
-                           excel=excel, form=form, litrescard=litrescard, bibkomcard=bibkomcard)
+                           excel=excel, form=form, litrescard=litrescard, bibkomcard=bibkomcard, int_lst=my_list_int)
 
 
 @app.route('/update/<number>', methods=['POST'])
@@ -256,7 +259,7 @@ def create_book(number):
 def excel(number):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
-    result = connection.execute('select number, author, name from excel limit %s00,100;' % number)
+    result = connection.execute('select number, author, name from excel order by number limit %s00,100;' % number)
     excel = []
     for row in result.fetchall():
         excel.append(row)

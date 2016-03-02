@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
+<p>• <a href="/list/0">На главную</a> • </p> <br />
   {% for ex in excel %}
    <li class="excel"><a href="/show/{{ ex[0] }}" class="excel">{{ ex[0] }} {{ ex[1] }} {{ ex[2] }}</a> {{ex[3]}} <span style="color: #A63C18">{{ex[4]}}</span></li><br>
   {% endfor %}
