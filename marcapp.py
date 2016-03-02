@@ -108,10 +108,6 @@ def show_book(number):
         field_bib =row_bibkom[3]
         info_bib = row_bibkom[5]
         bibkomcard.append(dict(field='%-5s' % field_bib, info=info_bib))
-    r_int = connection.execute("select count(*) from excel e where e.number<=%s" % number)
-    list_int = int(r_int.fetchall()) / 100
-    list_int = int(list_int)
-    print list_int
     return render_template('show_entries.html', mybooks=zip(mybooks, excel),
                            excel=excel, form=form, litrescard=litrescard, bibkomcard=bibkomcard)
 
