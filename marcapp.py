@@ -171,7 +171,8 @@ def copy_book(number):
                 else:
                     line2 = re.search(u'([$|]a [^$|]+)', line)
                     line_into = line2.group(0) + u' |h [Электронный ресурс] |'
-                    line = re.sub(u'([$|]a [^$|]+)', line_into, line)
+                    print line_into
+                    line = re.sub(u'[$|]a [^$|]+', line_into, line)
             if t(line[:3]):
                 lines.append(line)
         mime_str = u'application/pdf'
