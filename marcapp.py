@@ -165,7 +165,7 @@ def copy_book(number):
         # фильтруем
         for line in form.card_lines.data.split('\n'):
             if line[:3] == '245':
-                line1 = re.search(u'[\|]+h +\[*[Тт]+екст\]* [\|:]', line)
+                line1 = re.search(u'[\|]+h +\[*[Тт]+екст\]* +[\|:]', line)
                 if line1 is not None:
                     line = re.sub(u'[\|] +\[*[Тт]+екст\]* [\|:]+', u'|h [Электронный ресурс] |', line)
                 else:
