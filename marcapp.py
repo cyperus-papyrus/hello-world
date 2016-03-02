@@ -111,6 +111,7 @@ def show_book(number):
     r_int = connection.execute("select count(*) from excel e where e.number<=%s order by number" % number)
     list_int = int(r_int.fetchall()) / 100
     list_int = int(list_int)
+    print list_int
     return render_template('show_entries.html', mybooks=zip(mybooks, excel),
                            excel=excel, form=form, litrescard=litrescard, bibkomcard=bibkomcard, list_int=list_int)
 

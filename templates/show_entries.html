@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-<a href="/list/{{list_int}}">Вернуться на страницу</a>
+<a href="/list/{{ list_int }}">Вернуться на страницу</a>
   {% for book, excel in mybooks %}
     <h1>{{ excel[1] }},  « {{ excel[2] }} »</h1>
         <h2>Номер {{ excel[0] }}, ISBN: {{ excel[4] }}, {{ excel[3] }}.</h2>
