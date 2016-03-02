@@ -113,7 +113,7 @@ def show_book(number):
     list_int = int(list_int)
     print list_int
     return render_template('show_entries.html', mybooks=zip(mybooks, excel),
-                           excel=excel, form=form, litrescard=litrescard, bibkomcard=bibkomcard, list_int=list_int)
+                           excel=excel, form=form, litrescard=litrescard, bibkomcard=bibkomcard)
 
 
 @app.route('/update/<number>', methods=['POST'])
