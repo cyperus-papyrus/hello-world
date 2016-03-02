@@ -165,7 +165,13 @@ def copy_book(number):
         # фильтруем
         for line in form.card_lines.data.split('\n'):
             if line[:3] == '245':
-                line = re.sub(u'\|h \[[Тт]екст\] :', u'|h [Электронный ресурс] :', line)
+                line1 = re.search(u'[\|]+h +\[*[Тт]+екст\]* [\|]', line)
+                if line1 is not None:
+                    line = re.sub(u'[\|] +\[*[Тт]+екст\]* [\|:]+', u'|h [Электронный ресурс] |', line)
+                else:
+                    line2 = re.search(u'([$|]a [^$|]+)', line)
+                    line_into = line2.group(0) + u' |h [Электронный ресурс] '
+                    line = re.sub(u'([$|]a [^$|]+)', line_into, line)
             if t(line[:3]):
                 lines.append(line)
         mime_str = u'application/pdf'
