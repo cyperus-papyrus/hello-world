@@ -157,7 +157,7 @@ def copy_book(number):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
     r = connection.execute("select author, name, format, filename, isbn, pubhouse from excel where (number='%s');" % number)  # забираем строчку задания
-    (author, name, frmt, filename, isbn, pubhouse) = r.fetchone()
+    (author, name, frmt, filename, isbn1, pubhouse) = r.fetchone()
     form = MyForm(request.form)  # объявляем формы из класса выше
     if request.method == 'POST':
         litresnum = '%0.6i' % int(number) + 'Ru-MoLR'
@@ -183,7 +183,7 @@ def copy_book(number):
            mime_str = u'application/epub+zip'
         litres_special.append(
                   u'8561    |a rsl.ru |f %s |n Российская государственная библиотека, Москва, РФ |q %s'%(filename,mime_str))
-        isbn = re.sub('\r\n', u'', isbn, 0, re.M)
+        isbn = re.sub('\r\n', u'', isbn1, 0, re.M)
         isbn = re.sub('"', u'', isbn, 0, re.M)
         isbn = re.sub(u', ', ',', isbn, 0, re.M)
         isbn = re.sub(u'[()\.А-Яа-яЁёI ,:;+\[\]]+', u',', isbn, 0, re.M)
@@ -192,13 +192,16 @@ def copy_book(number):
         isbn = re.sub(u',{2,}', u',', isbn, 0, re.M)
         isbn = re.sub(u'^\s+', u'', isbn, 0, re.M)
         isbn = re.sub(u'\s+$', u'', isbn, 0, re.M)
-        if ',' in isbn:
-            isbn_lst = string.split(isbn, ',')
+        if isbn1 != u'отсутствует':
+            if ',' in isbn:
+                isbn_lst = string.split(isbn, ',')
+            else:
+                isbn_lst = []
+                isbn_lst.append(isbn)
+            for i in isbn_lst:
+                litres_special.append(u'020     |a %s'%i)
         else:
-            isbn_lst = []
-            isbn_lst.append(isbn)
-        for i in isbn_lst:
-            litres_special.append(u'020     |a %s'%i)
+            pass
         litres_special.append(u'1001   |a %s' % author)
         # добавляем спец. строчки
         lines.extend(litres_special)
@@ -253,13 +256,16 @@ def create_book(number):
         isbn = re.sub(u',{2,}', u',', isbn, 0, re.M)
         isbn = re.sub(u'^\s+', u'', isbn, 0, re.M)
         isbn = re.sub(u'\s+$', u'', isbn, 0, re.M)
-        if ',' in isbn:
-            isbn_lst = string.split(isbn, ',')
+        if isbn1 != u'отсутствует':
+            if ',' in isbn:
+                isbn_lst = string.split(isbn, ',')
+            else:
+                isbn_lst = []
+                isbn_lst.append(isbn1)
+            for i in isbn_lst:
+                litres_special.append(u'020     |a %s'%i)
         else:
-            isbn_lst = []
-            isbn_lst.append(isbn1)
-        for i in isbn_lst:
-            litres_special.append(u'020     |a %s'%i)
+            pass
         mime_str = u'application/pdf'
         if frmt == 'epub':
            mime_str = u'application/epub+zip'
