@@ -25,9 +25,9 @@ class MyForm(Form):
 
 
 def t(n):
-    if n not in ('SID', '000', '001', '003', '005', '008', '017', '035', '040',
+    if n not in ('SID', '000', '001', '003', '005', '008', '017', '035', '040', '018', '019', '044', '020',
                  '336', '337', '338', '538', '852', '912', '979', '856', '533', 'SYS', 'OWN', 'UID', 'FMT', 'CAT',
-                 'LKR'):
+                 'LKR', '954', '955', '956', '010', '011', '012', '013', '014', '015', '100'):
         return True
     return False
 
@@ -156,8 +156,8 @@ def copy_book(number):
                   u'979     |a dluniv |a dlopen']
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
-    r = connection.execute("select author, name, format, filename, isbn from excel where (number='%s');" % number)  # забираем строчку задания
-    (author, name, frmt, filename, isbn) = r.fetchone()
+    r = connection.execute("select author, name, format, filename, isbn, pubhouse from excel where (number='%s');" % number)  # забираем строчку задания
+    (author, name, frmt, filename, isbn, pubhouse) = r.fetchone()
     form = MyForm(request.form)  # объявляем формы из класса выше
     if request.method == 'POST':
         litresnum = '%0.6i' % int(number) + 'Ru-MoLR'
@@ -199,6 +199,7 @@ def copy_book(number):
             isbn_lst.append(isbn)
         for i in isbn_lst:
             litres_special.append(u'020     |a %s'%i)
+        litres_special.append(u'1001   |a %s' % author)
         # добавляем спец. строчки
         lines.extend(litres_special)
         lines.append(u'001     ' + '%0.6i' % int(number))
@@ -228,8 +229,7 @@ def create_book(number):
                   u'0410    |a rus',
                   u'538     |a Системные требования: Adobe Digital Editions',
                   u'000     00000nmm^a2200000^i^4500',
-                  u'979     |a dluniv |a dlopen',
-                  u'0411    |arus']
+                  u'979     |a dluniv |a dlopen']
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
     r = connection.execute("select author, name, format, filename, isbn, pubhouse from excel where (number='%s');" % number)  # забираем строчку задания
@@ -244,7 +244,6 @@ def create_book(number):
         # фильтруем
         litres_special.append(u'24510  |a %s |h [Электронный ресурс]' % name)
         litres_special.append(u'1001   |a %s' % author)
-        litres_special.append(u'260    |b %s' % pubhouse)
         isbn = re.sub('\r\n', u'', isbn1, 0, re.M)
         isbn = re.sub('"', u'', isbn, 0, re.M)
         isbn = re.sub(u', ', ',', isbn, 0, re.M)
