@@ -28,7 +28,7 @@
         <h1>Нет карточек!</h1>
         <p>К сожалению, в базе данных нет карточек для такой книги.</p>
         <p>Вы можете создать ее самостоятельно, воспользовавшись шаблоном для создания marc21-карт ЛитРес:</p>
-        <form method="post" action='/copy/{{ excel[0] }}'>{{form.copy(value="Создать карточку!")}}</form>
+        <form method="post" action='/create/{{ excel[0] }}'>{{form.copy(value="Создать карточку!")}}</form>
         {% endif %}
         {% if bibkomcard %}
         <div id="sidebar">

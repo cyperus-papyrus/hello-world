@@ -8,6 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Table
 import re
 from sqlalchemy import text
+import string
 
 app = Flask(__name__)
 sql = u"""INSERT IGNORE INTO aleph2 (id, author, title, field, info, info_text)
@@ -152,7 +153,7 @@ def copy_book(number):
                   u'044     |a ru',
                   u'538     |a Системные требования: Adobe Digital Editions',
                   u'000     00000nmm^a2200000^i^4500',
-                  u'979^^   |a dluniv |a dlopen']
+                  u'979     |a dluniv |a dlopen']
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
     r = connection.execute("select author, name, format, filename, isbn from excel where (number='%s');" % number)  # забираем строчку задания
@@ -181,8 +182,23 @@ def copy_book(number):
         if frmt == 'epub':
            mime_str = u'application/epub+zip'
         litres_special.append(
-                  u'8561^   |a rsl.ru |f %s |n Российская государственная библиотека, Москва, РФ |q %s'%(filename,mime_str))
-        litres_special.append(u'020     |a %s'%isbn)
+                  u'8561    |a rsl.ru |f %s |n Российская государственная библиотека, Москва, РФ |q %s'%(filename,mime_str))
+        isbn = re.sub('\r\n', u'', isbn, 0, re.M)
+        isbn = re.sub('"', u'', isbn, 0, re.M)
+        isbn = re.sub(u', ', ',', isbn, 0, re.M)
+        isbn = re.sub(u'[()\.А-Яа-яЁёI ,:;+\[\]]+', u',', isbn, 0, re.M)
+        isbn = re.sub(u'\.', u',', isbn, 0, re.M)
+        isbn = re.sub(u',+$', u'', isbn, 0, re.M)
+        isbn = re.sub(u',{2,}', u',', isbn, 0, re.M)
+        isbn = re.sub(u'^\s+', u'', isbn, 0, re.M)
+        isbn = re.sub(u'\s+$', u'', isbn, 0, re.M)
+        if ',' in isbn:
+            isbn_lst = string.split(isbn, ',')
+        else:
+            isbn_lst = []
+            isbn_lst.append(isbn)
+        for i in isbn_lst:
+            litres_special.append(u'020     |a %s'%i)
         # добавляем спец. строчки
         lines.extend(litres_special)
         lines.append(u'001     ' + '%0.6i' % int(number))
@@ -212,11 +228,12 @@ def create_book(number):
                   u'0410    |a rus',
                   u'538     |a Системные требования: Adobe Digital Editions',
                   u'000     00000nmm^a2200000^i^4500',
-                  u'979^^   |a dluniv |a dlopen']
+                  u'979     |a dluniv |a dlopen',
+                  u'0411    |arus']
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
-    r = connection.execute("select author, name, format, filename, isbn from excel where (number='%s');" % number)  # забираем строчку задания
-    (author, name, frmt, filename, isbn) = r.fetchone()
+    r = connection.execute("select author, name, format, filename, isbn, pubhouse from excel where (number='%s');" % number)  # забираем строчку задания
+    (author, name, frmt, filename, isbn1, pubhouse) = r.fetchone()
     form = MyForm(request.form)  # объявляем формы из класса выше
     if request.method == 'POST':
         litresnum = '%0.6i' % int(number) + 'Ru-MoLR'
@@ -225,17 +242,30 @@ def create_book(number):
                            {'id': litresnum})
         lines = []
         # фильтруем
-        for line in form.card_lines.data.split('\n'):
-            if line[:3] == '245':
-                line = re.sub(u'\|h \[[Тт]екст\] :', u'|h [Электронный ресурс] :', line)
-            if t(line[:3]):
-                lines.append(line)
+        litres_special.append(u'24510  |a %s |h [Электронный ресурс]' % name)
+        litres_special.append(u'1001   |a %s' % author)
+        litres_special.append(u'260    |b %s' % pubhouse)
+        isbn = re.sub('\r\n', u'', isbn1, 0, re.M)
+        isbn = re.sub('"', u'', isbn, 0, re.M)
+        isbn = re.sub(u', ', ',', isbn, 0, re.M)
+        isbn = re.sub(u'[()\.А-Яа-яЁёI ,:;+\[\]]+', u',', isbn, 0, re.M)
+        isbn = re.sub(u'\.', u',', isbn, 0, re.M)
+        isbn = re.sub(u',+$', u'', isbn, 0, re.M)
+        isbn = re.sub(u',{2,}', u',', isbn, 0, re.M)
+        isbn = re.sub(u'^\s+', u'', isbn, 0, re.M)
+        isbn = re.sub(u'\s+$', u'', isbn, 0, re.M)
+        if ',' in isbn:
+            isbn_lst = string.split(isbn, ',')
+        else:
+            isbn_lst = []
+            isbn_lst.append(isbn1)
+        for i in isbn_lst:
+            litres_special.append(u'020     |a %s'%i)
         mime_str = u'application/pdf'
         if frmt == 'epub':
            mime_str = u'application/epub+zip'
         litres_special.append(
-                  u'8561^   |a rsl.ru |f %s |n Российская государственная библиотека, Москва, РФ |q %s'%(filename,mime_str))
-        litres_special.append(u'020     |a %s'%isbn)
+                  u'8561    |a rsl.ru |f %s |n Российская государственная библиотека, Москва, РФ |q %s'%(filename,mime_str))
         # добавляем спец. строчки
         lines.extend(litres_special)
         lines.append(u'001     ' + '%0.6i' % int(number))
