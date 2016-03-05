@@ -9,6 +9,8 @@ from sqlalchemy import Table
 import re
 from sqlalchemy import text
 import string
+from flask import make_response
+import pymarc
 
 app = Flask(__name__)
 sql = u"""INSERT IGNORE INTO aleph2 (id, author, title, field, info, info_text)
@@ -167,6 +169,7 @@ def copy_book(number):
         lines = []
         # фильтруем
         for line in form.card_lines.data.split('\n'):
+            line = re.sub(u'\t',u'   ',line,0) # копипейст с сайта ргб могут быть табуляции
             if line[:3] == '245':
                 line1 = re.search(u'[\|]+h +\[*[Тт]+екст\]* +[\|:]', line)
                 if line1 is not None:
@@ -237,7 +240,6 @@ def create_book(number):
     connection.execute("SET character_set_connection=utf8")
     r = connection.execute("select author, name, format, filename, isbn, pubhouse from excel where (number='%s');" % number)  # забираем строчку задания
     (author, name, frmt, filename, isbn1, pubhouse) = r.fetchone()
-    form = MyForm(request.form)  # объявляем формы из класса выше
     if request.method == 'POST':
         litresnum = '%0.6i' % int(number) + 'Ru-MoLR'
         connection.execute("START TRANSACTION;")
@@ -323,6 +325,38 @@ def excel(number):
     if prev_number < 0:
         prev_number = 0
     return render_template('show.html', excel=books, number1=next_number, number2=prev_number)
+
+
+@app.route("/getfile")
+def make_marc():
+    form = MyForm(request.form)
+    if request.method == 'POST':
+        lines = []
+        # фильтруем
+        for line in form.card_lines.data.split('\n'):
+            if line[:3] == '000':
+                line_leader = line[:7]
+            if line[:3] < '020':
+                line_pymarc_f = dict(tag=line[:3], data=line[6:])
+            else:
+                line_pymarc_ind = string.split('|', line[6:])
+                line_pymarc_p = dict(tag=line[:3], indicators=[line[4], line[5]],  subfields=line_pymarc_ind)
+            lines.append(line_pymarc)
+        r = pymarc.Record(to_unicode=True, force_utf8=True)
+        r.add_field(pymarc.Field(data=u'123123',tag=u'001'))
+        r.add_field(pymarc.Field(data=u'Ru-MoLR',tag=u'003'))
+        r.add_field(pymarc.Field(tag=u'245', indicators=[u'1',u'0'],
+        subfields= [u'a',u'Бисероплетение для начинающих мастериц',u'h',u'[Электронный текст]']
+        ))
+        r.add_field(pymarc.Field(tag=u'650', indicators=[u' ',u'7'],
+        subfields= [u'a',u'Рукоделие -- Плетение',u'2',u'rubbk']
+        ))
+
+        # This is the key: Set the right header for the response
+        # to be downloaded, instead of just printed on the browser
+        response = make_response(r.as_marc())
+        response.headers["Content-Disposition"] = "attachment; filename=book.mrc"
+        return response
 
 if __name__ == '__main__':
     app.debug = True
