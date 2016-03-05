@@ -177,7 +177,7 @@ def copy_book(number):
                 else:
                     line2 = re.search(u'([$|]a [^$|]+)', line)
                     line_into = line2.group(0) + u' |h [Электронный ресурс] |'
-                    print line_into
+                    # print line_into
                     line = re.sub(u'[$|]a [^$|]+', line_into, line)
             if t(line[:3]):
                 lines.append(line)
@@ -317,7 +317,7 @@ def excel(number):
         else:
             check_lr = ('',)
         books.append(element + check_lr + check_rgb)
-    print books
+    # print books
     next_number = int(number) + 1
     if next_number > 56:
         next_number = 56
