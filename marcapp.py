@@ -341,7 +341,7 @@ def make_marc():
                 r.leader = line[7:]
             elif tag < '010' and tag.isdigit():
                 r.add_field(pymarc.Field(data=info,tag=tag))
-            elif:
+            else:
                 line_pymarc_onebyone = string.split(line[6:], '|')
                 subfields=[]
                 for oneline in line_pymarc_onebyone:
