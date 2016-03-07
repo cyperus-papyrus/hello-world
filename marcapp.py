@@ -331,30 +331,21 @@ def excel(number):
 def make_marc():
     form = MyForm(request.form)
     if request.method == 'POST':
-        lines1 = []
-        lines2 = []
+        r = pymarc.Record(to_unicode=True, force_utf8=True)
         for line in form.card_lines.data.split('\n'):
+            info = re.sub(u'^\s+',u'',line[6:])
             if line[:3] == '000':
-                line_leader = line[7:]
-            if line[:3] < '010':
-                line_pymarc_f = dict(tag=line[:3], data=line[6:])
-                lines1.append(line_pymarc_f)
+                r.leader = line[7:]
+            if int(line[:3]) < int('010'):
+                r.add_field(pymarc.Field(data=info,tag=line[:3]))
             else:
                 line_pymarc_onebyone = string.split(line[6:], '|')
-                line_pymarc_p = []
+                subfileds=[]
                 for oneline in line_pymarc_onebyone:
-                    lpone = oneline[0]
-                    lptwo = oneline[2:]
-                    line_pymarc_p.append(lpone)
-                    line_pymarc_p.append(lptwo)
-                line_pymarc_p2 = dict(tag=line[:3], indicators=[line[4], line[5]],  subfields=line_pymarc_p)
-                lines2.append(line_pymarc_p2)
-        r = pymarc.Record(to_unicode=True, force_utf8=True)
-        r.leader = line_leader
-        for i in lines1:
-            r.add_field(pymarc.Field(data=i['data'],tag=i['tag']))
-        for j in lines2:
-            r.add_field(pymarc.Field(tag=j['tag'], indicators=j['indicators'], subfields=j['subfields']))
+                    subfields.append(oneline[0])
+                    subfield_value = re.sub(u'\s*$',u'', re.sub(u'^\s*',u'',oneline[2:]) )
+                    subfields.append(subfield_value)
+                r.add_field(pymarc.Field(tag=j['tag'], indicators=j['indicators'], subfields=subfielfds)
         # This is the key: Set the right header for the response
         # to be downloaded, instead of just printed on the browser
         response = make_response(r.as_marc())
