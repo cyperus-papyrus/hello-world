@@ -335,11 +335,13 @@ def make_marc():
         for line in form.card_lines.data.split('\n'):
             info = re.sub(u'^\s+',u'',line[6:])
             tag = line[:3]
-            if line[:3] == '000':
+            if len(tag)<3:
+                continue
+            elif line[:3] == '000':
                 r.leader = line[7:]
-            if tag < '010' and tag.isdigit():
+            elif tag < '010' and tag.isdigit():
                 r.add_field(pymarc.Field(data=info,tag=tag))
-            else:
+            elif:
                 line_pymarc_onebyone = string.split(line[6:], '|')
                 subfileds=[]
                 for oneline in line_pymarc_onebyone:
