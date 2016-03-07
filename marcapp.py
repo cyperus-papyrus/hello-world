@@ -334,10 +334,11 @@ def make_marc():
         r = pymarc.Record(to_unicode=True, force_utf8=True)
         for line in form.card_lines.data.split('\n'):
             info = re.sub(u'^\s+',u'',line[6:])
+            tag = line[:3]
             if line[:3] == '000':
                 r.leader = line[7:]
-            if int(line[:3]) < int('010'):
-                r.add_field(pymarc.Field(data=info,tag=line[:3]))
+            if tag < '010' and tag.isdigit():
+                r.add_field(pymarc.Field(data=info,tag=tag))
             else:
                 line_pymarc_onebyone = string.split(line[6:], '|')
                 subfileds=[]
@@ -345,7 +346,7 @@ def make_marc():
                     subfields.append(oneline[0])
                     subfield_value = re.sub(u'\s*$',u'', re.sub(u'^\s*',u'',oneline[1:]) )
                     subfields.append(subfield_value)
-                r.add_field(pymarc.Field(tag=line[:3], indicators=[line[3], line[4]], subfields=subfielfds))
+                r.add_field(pymarc.Field(tag=tag, indicators=[line[3], line[4]], subfields=subfielfds))
         # This is the key: Set the right header for the response
         # to be downloaded, instead of just printed on the browser
         response = make_response(r.as_marc())
