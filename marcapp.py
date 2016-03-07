@@ -345,7 +345,7 @@ def make_marc():
                 line_pymarc_onebyone = string.split(re.sub(u'^\s+',u'',line[6:]), '|')
                 subfields=[]
                 for oneline in line_pymarc_onebyone:
-                    if oneline[0]==' ' or oneline[0]=='':
+                    if oneline == None or oneline[0] == u' ' or oneline[0] == u'':
                         continue
                     subfields.append(oneline[0])
                     subfield_value = re.sub(u'\s*$',u'', re.sub(u'^\s*',u'',oneline[1:]) )
