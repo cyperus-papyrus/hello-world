@@ -345,12 +345,14 @@ def make_marc():
                 line_pymarc_onebyone = string.split(info,'|')
                 subfields=[]
                 for oneline in line_pymarc_onebyone:
+                    tag1=u'%s'%line[3] 
+                    tag2=u'%s'%line[4]
                     if oneline == None or oneline[0] == u' ' or oneline[0] == u'':
                         continue
                     subfields.append(oneline[0])
                     subfield_value = re.sub(u'\s*$',u'', re.sub(u'^\s*',u'',oneline[1:]) )
                     subfields.append(subfield_value)
-                r.add_field(pymarc.Field(tag=tag, indicators=[line[3], line[4]], subfields=subfields))
+                r.add_field(pymarc.Field(tag=tag, indicators=[tag1,tag2], subfields=subfields))
         # This is the key: Set the right header for the response
         # to be downloaded, instead of just printed on the browser
         response = make_response(r.as_marc())
