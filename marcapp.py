@@ -2,7 +2,7 @@
 from flask import Flask, render_template, request, redirect
 from sqlalchemy import create_engine, MetaData
 from wtforms import Form
-from wtforms import SubmitField, TextAreaField
+from wtforms import SubmitField, TextAreaField, HiddenField
 from wtforms.validators import DataRequired
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Table
@@ -326,43 +326,58 @@ def excel(number):
         prev_number = 0
     return render_template('show.html', excel=books, number1=next_number, number2=prev_number)
 
-
-@app.route('/getfile', methods=['GET', 'POST'])
-def make_marc():
-    form = MyForm(request.form)
+import StringIO
+@app.route('/getfile/<number>', methods=['GET', 'POST'])
+def make_marc(number):
     if request.method == 'POST':
+        connection = engine.connect()
+        connection.execute("SET character_set_connection=utf8")
         r = pymarc.Record(to_unicode=True, force_utf8=True)
-        for line in form.card_lines.data.split('\n'):
-            info = re.sub(u'^\s+',u'',line[6:])
-            tag = line[:3]
+        litresnum = '%0.6i' % int(number) + 'Ru-MoLR'
+        result = connection.execute(
+        "SELECT field, info_text FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD " % litresnum)
+        for (field, info_text) in result.fetchall():
+            info = re.sub(u'^\s+',u'',info_text)
+            tag = field[:3]
             if len(tag)<3:
                 continue
-            elif line[:3] == '000':
-                r.leader = line[7:]
+            elif tag == '000':
+                r.leader = re.sub(u'\s',u'',info)
             elif tag < '010' and tag.isdigit():
-                r.add_field(pymarc.Field(tag=tag, data=info))
+                r.add_field(pymarc.Field(tag=tag, data=re.sub(u'\s',u'',info)))
             else :
                 line_pymarc_onebyone = string.split(info,'|')
                 subfields=[]
                 for oneline in line_pymarc_onebyone:
                     if len(oneline)<2:
                         continue
-                    # print '** ',info
+                    # print '** ',i nfo
                     # print '== ', len(oneline)
                     # print '>> ',oneline
-                    tag1=u'%s'%line[3]
-                    tag2=u'%s'%line[4]
+                    tag1=u'%s'%field[3]
+                    tag2=u'%s'%field[4]
                     subfields.append(oneline[0])
                     subfield_value = re.sub(u'\s*$',u'', re.sub(u'^\s*',u'',oneline[1:]) )
                     subfields.append(subfield_value)
                 r.add_field(pymarc.Field(tag=tag, indicators=[tag1,tag2], subfields=subfields))
         # This is the key: Set the right header for the response
         # to be downloaded, instead of just printed on the browser
-        response = make_response(r.as_marc())
+        # resp = r.as_marc()
+        resp = StringIO.StringIO()
+        writer = pymarc.MARCWriter(resp)
+        writer.write(r)
+        print len(resp.getvalue())
+        print resp.getvalue()
+        response = make_response(resp.getvalue())
+        writer.close(close_fh=False)
+        with open('bbb.xml','wb') as f2:
+            f2.write(pymarc.marcxml.record_to_xml(r))
+            f2.close()
         response.headers["Content-Disposition"] = "attachment; filename=book.mrc"
         response.headers["Content-Type"] = "application/octet-stream"
         print r
         return response
+
 
 if __name__ == '__main__':
     app.debug = True
