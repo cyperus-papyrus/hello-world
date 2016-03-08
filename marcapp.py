@@ -345,10 +345,13 @@ def make_marc():
                 line_pymarc_onebyone = string.split(info,'|')
                 subfields=[]
                 for oneline in line_pymarc_onebyone:
+                    if len(oneline)<2:
+                        continue
+                    print '** ',info
+                    print '== ', len(oneline)
+                    print '>> ',oneline
                     tag1=u'%s'%line[3] 
                     tag2=u'%s'%line[4]
-                    if oneline == None or oneline[0] == u' ' or oneline[0] == u'':
-                        continue
                     subfields.append(oneline[0])
                     subfield_value = re.sub(u'\s*$',u'', re.sub(u'^\s*',u'',oneline[1:]) )
                     subfields.append(subfield_value)
