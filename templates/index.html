@@ -1,9 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-<div id="holder">
-  <div id="content">
-    {% block content %}
-    <h1>Welocme!</h1>
- </div>
-</div>
+<p>• <a href="/list/0">На главную</a> • <br />
+    <p><a href="static/marc_cards.mrc">Файл в формате MARC</a>, создан {{ data1 }}, {{ s1 }} байт</p>
+    <p><a href="static/marc_cards.txt">Файл в формате TXT</a>, создан {{ data2 }}, {{ s2 }} байт</p>
 {% endblock %}

@@ -2,7 +2,7 @@
 from flask import Flask, render_template, request, redirect
 from sqlalchemy import create_engine, MetaData
 from wtforms import Form
-from wtforms import SubmitField, TextAreaField, HiddenField
+from wtforms import SubmitField, TextAreaField
 from wtforms.validators import DataRequired
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Table
@@ -11,6 +11,8 @@ from sqlalchemy import text
 import string
 from flask import make_response
 import pymarc
+import os, os.path
+import time
 
 app = Flask(__name__)
 sql = u"""INSERT IGNORE INTO aleph2 (id, author, title, field, info, info_text)
@@ -50,8 +52,14 @@ aleph2 = Table('aleph2', metadata, autoload=True)
 
 @app.route('/')
 def index():
-    return redirect('/list/0')
-
+    t1 = os.path.getmtime('static/marc_cards.mrc') # дата последнего изменения файла
+    t2 = os.path.getmtime('static/marc_cards.txt') # дата последнего изменения файла
+    # напечатать дату в строковом формате:
+    data_t1 = time.ctime(t1)
+    data_t2 = time.ctime(t2)
+    folder_size1 = os.path.getsize('static/marc_cards.mrc')
+    folder_size2 = os.path.getsize('static/marc_cards.txt')
+    return render_template('index.html', data1=data_t1, data2=data_t2, s1=folder_size1, s2=folder_size2)
 
 @app.route('/show/<number>')
 def show_book(number):
