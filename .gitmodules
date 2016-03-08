@@ -1,4 +1,0 @@
-[submodule "pymarc"]
-	path = pymarc
-	url = https://github.com/cyperus-papyrus/pymarc.git
-	branch = master
