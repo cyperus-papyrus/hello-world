@@ -340,17 +340,17 @@ def make_marc():
             elif line[:3] == '000':
                 r.leader = line[7:]
             elif tag < '010' and tag.isdigit():
-                r.add_field(pymarc.Field(data=info,tag=tag))
+                r.add_field(pymarc.Field(tag=tag, data=info))
             else :
                 line_pymarc_onebyone = string.split(info,'|')
                 subfields=[]
                 for oneline in line_pymarc_onebyone:
                     if len(oneline)<2:
                         continue
-                    print '** ',info
-                    print '== ', len(oneline)
-                    print '>> ',oneline
-                    tag1=u'%s'%line[3] 
+                    # print '** ',info
+                    # print '== ', len(oneline)
+                    # print '>> ',oneline
+                    tag1=u'%s'%line[3]
                     tag2=u'%s'%line[4]
                     subfields.append(oneline[0])
                     subfield_value = re.sub(u'\s*$',u'', re.sub(u'^\s*',u'',oneline[1:]) )
@@ -360,6 +360,7 @@ def make_marc():
         # to be downloaded, instead of just printed on the browser
         response = make_response(r.as_marc())
         response.headers["Content-Disposition"] = "attachment; filename=book.mrc"
+        print r
         return response
 
 if __name__ == '__main__':
