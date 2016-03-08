@@ -360,6 +360,7 @@ def make_marc():
         # to be downloaded, instead of just printed on the browser
         response = make_response(r.as_marc())
         response.headers["Content-Disposition"] = "attachment; filename=book.mrc"
+        response.headers["Content-Type"] = "application/octet-stream"
         print r
         return response
 
