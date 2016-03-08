@@ -46,6 +46,9 @@
           {{form.copy(value="Копировать карточку!")}}</form>
         </div>
         {% endif %}<br />
+            <hr>
+            <h1>Скачивание MARC файла</h1>
+            <p>Если вы хотите закачать на свой компьютер marc-карточку для этой книги, нажимте на кнопку:</p>
             <form method="post" action='/getfile/{{ excel[0] }}'> {{ form.copy(value="Скачать MARC21 файл") }}</form>
     </div>
     <br />
