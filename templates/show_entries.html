@@ -45,8 +45,9 @@
           </table>
           {{form.copy(value="Копировать карточку!")}}</form>
         </div>
-        {% endif %}
-        </div>
+        {% endif %}<br />
+            <form method="post" action='/getfile/{{ excel[0] }}'> {{ form.copy(value="Скачать MARC21 файл") }}</form>
+    </div>
     <br />
     <hr>
   {% endfor %}

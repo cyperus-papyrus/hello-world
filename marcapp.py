@@ -326,6 +326,7 @@ def excel(number):
         prev_number = 0
     return render_template('show.html', excel=books, number1=next_number, number2=prev_number)
 
+
 import StringIO
 @app.route('/getfile/<number>', methods=['GET', 'POST'])
 def make_marc(number):
@@ -337,6 +338,7 @@ def make_marc(number):
         result = connection.execute(
         "SELECT field, info_text FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD " % litresnum)
         for (field, info_text) in result.fetchall():
+            field = u'%-5s' % field
             info = re.sub(u'^\s+',u'',info_text)
             tag = field[:3]
             if len(tag)<3:
@@ -373,7 +375,8 @@ def make_marc(number):
         with open('bbb.xml','wb') as f2:
             f2.write(pymarc.marcxml.record_to_xml(r))
             f2.close()
-        response.headers["Content-Disposition"] = "attachment; filename=book.mrc"
+        name_number = '%0.5i' % int(number)
+        response.headers["Content-Disposition"] = "attachment; filename=book%s.mrc" % name_number
         response.headers["Content-Type"] = "application/octet-stream"
         print r
         return response
