@@ -1,0 +1,3 @@
+[submodule "pymarc_helga"]
+	path = pymarc_helga
+	url = https://github.com/cyperus-papyrus/pymarc.git
