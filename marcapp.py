@@ -368,8 +368,8 @@ def make_marc(number):
         resp = StringIO.StringIO()
         writer = pymarc.MARCWriter(resp)
         writer.write(r)
-        print len(resp.getvalue())
-        print resp.getvalue()
+        # print len(resp.getvalue())
+        # print resp.getvalue()
         response = make_response(resp.getvalue())
         writer.close(close_fh=False)
         with open('bbb.xml','wb') as f2:
@@ -378,7 +378,7 @@ def make_marc(number):
         name_number = '%0.5i' % int(number)
         response.headers["Content-Disposition"] = "attachment; filename=book%s.mrc" % name_number
         response.headers["Content-Type"] = "application/octet-stream"
-        print r
+        # print r
         return response
 
 
