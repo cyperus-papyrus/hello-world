@@ -5,6 +5,7 @@ import string
 import re
 from sqlalchemy import text
 import io
+import os
 
 
 def replace_russian_letters(x):
@@ -60,8 +61,9 @@ connection.execute("SET character_set_connection=utf8")
 result = connection.execute(
     text("SELECT id, field, info_text FROM marc.aleph2 WHERE id LIKE '%Ru-MoLR' ORDER BY ID, FIELD"))
 r = pymarc.Record(to_unicode=True, force_utf8=True)
-writer = pymarc.MARCWriter(open('static/marc_cards.mrc', 'wb'))
-text_writer = io.open('static/marc_cards.txt', 'w', encoding='utf-8')
+mypath = os.getcwd()
+writer = pymarc.MARCWriter(open('%s/static/marc_cards.mrc' % mypath, 'wb'))
+text_writer = io.open('%s/static/marc_cards.txt' % mypath, 'w', encoding='utf-8')
 prev_num = 0
 (id, field, info) = result.fetchone()
 current_num = id
