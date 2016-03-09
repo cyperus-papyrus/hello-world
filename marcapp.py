@@ -44,7 +44,7 @@ app.jinja_env.globals['url_for_other_page'] = url_for_other_page
 
 
 engine = create_engine('mysql://marc:123@localhost/marc?charset=utf8',
-                       encoding='utf-8', convert_unicode=True, echo=True)  # подключение к БД
+                       encoding='utf-8', convert_unicode=True)  # подключение к БД
 Session = sessionmaker(bind=engine)
 metadata = MetaData(bind=engine)
 aleph2 = Table('aleph2', metadata, autoload=True)
@@ -122,6 +122,7 @@ def show_book(number):
     (result_count,) = connection.execute("select count(*) from excel e where e.number<=%s order by number" % number)
     my_list_int = (int(result_count[0]) - 1) / 100
     print int(result_count[0])
+    print u'Загрузили страницу show %s' % number
     return render_template('show_entries.html', mybooks=zip(mybooks, excel),
                            excel=excel, form=form, litrescard=litrescard, bibkomcard=bibkomcard, int_lst=my_list_int)
 
@@ -332,6 +333,7 @@ def excel(number):
     prev_number = int(number) - 1
     if prev_number < 0:
         prev_number = 0
+    print u'Загрузили страницу list номер %s' % number
     return render_template('show.html', excel=books, number1=next_number, number2=prev_number)
 
 
