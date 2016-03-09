@@ -102,3 +102,7 @@ text_writer.close()
 test.close()
 print count
 print "Bad records counter:", counter
+total = int(count) + int(counter)
+num_file = open('num_file.txt', 'w')
+num_file.write(str(total) + u'\n' + str(count) + u'\n' + str(counter))
+num_file.close()

@@ -3,13 +3,13 @@
 <p>• <a href="/list/0">На главную</a> • <a href="/list/{{ int_lst }}">Вернуться к выбору книги</a> • </p>
   {% for book, excel in mybooks %}
     <h1>{{ excel[1] }},  « {{ excel[2] }} »</h1>
-        <h2>Номер {{ excel[0] }}, ISBN: {{ excel[4] }}, {{ excel[3] }}.</h2>
-        <h2>Файл: формат {{ excel[5] }}, название "{{ excel[6] }}", размер {{ excel[7] }}.</h2>
-          <h2>Cделать карточку по-литресовски:</h2>
-      <div><form action='/update/{{ excel[0] }}' method="post"><textarea class="new_card" name="card_lines" rows="30">{% for longcard in litrescard  %}{{ longcard.field }}  {{ longcard.info }}
+    <h2>Номер {{ excel[0] }}, ISBN: {{ excel[4] }}, {{ excel[3] }}.</h2>
+    <h2>Файл: формат {{ excel[5] }}, название "{{ excel[6] }}", размер {{ excel[7] }}.</h2>
+    <h2>Cделать карточку по-литресовски:</h2>
+    <div><form action='/update/{{ excel[0] }}' method="post"><textarea class="new_card" name="card_lines" rows="30">{% for longcard in litrescard  %}{{ longcard.field }}  {{ longcard.info }}
 {% endfor %}</textarea>
         {{ form.submit(value="Одобрить карточку!") }}</form>
-      </div>
+    </div>
       <br/>
    {% if book %}
     <div id="columns">
@@ -33,24 +33,26 @@
         <p>Если вы самостоятельно нашли карточку на сайте РГБ, и желаете на ее основе создать карточку ЛитРес, скопируйте ее в поле ниже:</p>
         <div ><form method="post" action='/copy/{{ excel[0] }}'><textarea name="card_lines"  rows="30"></textarea>
             <br />
-        {{form.copy(value="Копировать карточку!")}}</form>
+        {{form.copy(value="Копировать карточку!")}}</form></div>
         {% endif %}
         {% if bibkomcard %}
-        <div id="sidebar">
+        <div>
           <form method="post" action='/copy/{{ excel[0] }}'><table>
               <tr>
-                <td><textarea name="card_lines"  rows="50">{% for strbibcard in bibkomcard %}{{ strbibcard.field }}  {{ strbibcard.info }}
-{% endfor %}</textarea></td>
+                <td><textarea name="card_lines"  rows="50">{% for strbibcard in bibkomcard %}{{ strbibcard.field }}  {{ strbibcard.info }}{% endfor %}</textarea></td>
               </tr>
           </table>
           {{form.copy(value="Копировать карточку!")}}</form>
         </div>
-        {% endif %}<br />
-            <div style="width: 100%;"><hr>
-            <h1>Скачивание MARC файла</h1>
-            <p>Если вы хотите закачать на свой компьютер marc-карточку для этой книги, нажимте на кнопку:</p>
-            <form method="post" action='/getfile/{{ excel[0] }}'> {{ form.copy(value="Скачать MARC21 файл") }}</form></div>
+        {% endif %}
     </div>
+    <br />
+            <div style="width: 100%;">
+                <hr>
+                <h1>Скачивание MARC файла</h1>
+                <p>Если вы хотите закачать на свой компьютер marc-карточку для этой книги, нажимте на кнопку:</p>
+                <form method="post" action='/getfile/{{ excel[0] }}'> {{ form.copy(value="Скачать MARC21 файл") }}</form>
+            </div>
     <br />
     <hr>
   {% endfor %}

@@ -60,7 +60,14 @@ def index():
     data_t2 = time.ctime(t2)
     folder_size1 = os.path.getsize('static/marc_cards.mrc')
     folder_size2 = os.path.getsize('static/marc_cards.txt')
-    return render_template('index.html', data1=data_t1, data2=data_t2, s1=folder_size1, s2=folder_size2)
+    f = open('num_file.txt','r')
+    f = f.readlines()
+    total = f[0]
+    true_c = f[1]
+    wrong_c = f[2]
+    print true_c, wrong_c
+    return render_template('index.html', data1=data_t1, data2=data_t2,
+                           s1=folder_size1, s2=folder_size2, tc = true_c, wc = wrong_c, t = total)
 
 @app.route('/show/<number>')
 def show_book(number):

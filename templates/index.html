@@ -3,4 +3,9 @@
 <p>• <a href="/list/0">На главную</a> • <br />
     <p><a href="static/marc_cards.mrc">Файл в формате MARC</a>, создан {{ data1 }}, {{ s1 }} байт</p>
     <p><a href="static/marc_cards.txt">Файл в формате TXT</a>, создан {{ data2 }}, {{ s2 }} байт</p>
+    <table align="center">
+        <th>Всего готово: {{  t  }} карточек</th>
+        <tr><td> Правильных карточек: </td><td> {{ tc }} </td></tr>
+        <tr><td> Невалидных карточек: </td><td> {{ wc }} </td></tr>
+    </table>
 {% endblock %}
