@@ -6,11 +6,12 @@ import re
 from sqlalchemy import text
 import io
 import os
+import StringIO
 
 
 def replace_russian_letters(x):
     x = u'%s' % x
-    return {u'а': u'a', u'с': u'c', u'е': u'e', u'о': u'o', u'р': u'p', u'х': u'x'}.get(x,x)
+    return {u'а': u'a', u'с': u'c', u'е': u'e', u'о': u'o', u'р': u'p', u'х': u'x'}.get(x, x)
 
 
 def process_field(tag, info, r):
@@ -64,23 +65,40 @@ r = pymarc.Record(to_unicode=True, force_utf8=True)
 mypath = os.path.dirname(os.path.abspath(__file__))
 writer = pymarc.MARCWriter(open('%s/static/marc_cards.mrc' % mypath, 'wb'))
 text_writer = io.open('%s/static/marc_cards.txt' % mypath, 'w', encoding='utf-8')
-prev_num = 0
+test = io.open('%s/static/bad_marc_cards.txt' % mypath, 'w', encoding='utf-8')
 (id, field, info) = result.fetchone()
 current_num = id
 process_field(field, info, r)
+count = 0
+counter = 0
 
 for (id, field, info) in result.fetchall():
     if id == current_num:
         process_field(field, info, r)
     else:
         current_num = id
+        test_string = StringIO.StringIO()
+        testwriter = pymarc.MARCWriter(test_string)
+        testwriter.write(r)
+        test1 = pymarc.MARCReader(test_string.getvalue(), to_unicode=True, force_utf8=True)
+        try:
+            for x in test1:
+                count += 1
+        except UnicodeDecodeError:
+            counter += 1
+            test.write(record2text(r) + u'\n\n\n')
+        testwriter.close()
         writer.write(r)
-        text_writer.write(record2text(r)+u'\n\n\n')
+        text_writer.write(record2text(r) + u'\n\n\n')
         r = pymarc.Record(to_unicode=True, force_utf8=True)
         process_field(field, info, r)
 
 else:
     writer.write(r)
+    count += 1
     text_writer.write(record2text(r))
 writer.close()
 text_writer.close()
+test.close()
+print count
+print "Bad records counter:", counter
