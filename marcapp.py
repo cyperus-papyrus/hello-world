@@ -13,6 +13,7 @@ from flask import make_response
 import pymarc
 import os, os.path
 import time
+import datetime
 
 app = Flask(__name__)
 sql = u"""INSERT IGNORE INTO aleph2 (id, author, title, field, info, info_text)
@@ -122,7 +123,7 @@ def show_book(number):
     (result_count,) = connection.execute("select count(*) from excel e where e.number<=%s order by number" % number)
     my_list_int = (int(result_count[0]) - 1) / 100
     print int(result_count[0])
-    print u'Загрузили страницу show %s' % number
+    print datetime.datetime.now(), u'Загрузили страницу show %s' % number
     return render_template('show_entries.html', mybooks=zip(mybooks, excel),
                            excel=excel, form=form, litrescard=litrescard, bibkomcard=bibkomcard, int_lst=my_list_int)
 
@@ -333,7 +334,7 @@ def excel(number):
     prev_number = int(number) - 1
     if prev_number < 0:
         prev_number = 0
-    print u'Загрузили страницу list номер %s' % number
+    print datetime.datetime.now(), u'Загрузили страницу list номер %s' % number
     return render_template('show.html', excel=books, number1=next_number, number2=prev_number)
 
 
