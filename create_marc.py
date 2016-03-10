@@ -103,7 +103,7 @@ def do_create_marc():
     print count
     print "Bad records counter:", counter
     total = int(count) + int(counter)
-    num_file = open('%s/static/num_file.txt'%mypath, 'w')
+    num_file = open('%s/num_file.txt'%mypath, 'w')
     num_file.write(str(total) + u'\n' + str(count) + u'\n' + str(counter))
     num_file.close()
     
