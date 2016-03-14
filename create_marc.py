@@ -104,7 +104,7 @@ def do_create_marc():
     test.close()
     os.rename('%s/static/marc_cards_%s.mrc' % (mypath, time_now), '%s/static/marc_cards.mrc' % mypath)
     os.rename('%s/static/marc_cards_%s.txt' % (mypath, time_now), '%s/static/marc_cards.txt' % mypath)
-    os.rename('%s/static/bad_marc_cards_%s.txt' % (mypath, time_now), '%s/static/bad_marc_cards.mrc' % mypath)
+    os.rename('%s/static/bad_marc_cards_%s.txt' % (mypath, time_now), '%s/static/bad_marc_cards.txt' % mypath)
     print count
     print "Bad records counter:", counter
     total = int(count) + int(counter)
