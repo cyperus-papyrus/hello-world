@@ -85,7 +85,7 @@ import time
 def start_create_marc():
     # d = ['python','run.sh']
     print "sstart "
-    x = sb.Popen(['/bin/bash', '/home/helga/GitHub_Project/marcapp/run.sh'], stdout=sb.PIPE, stderr=sb.PIPE)
+    x = sb.Popen(['/bin/bash', '/home/helga/olgavr/marcapp/run.sh'], stdout=sb.PIPE, stderr=sb.PIPE)
     #line = x.stdout.readline()
     time.sleep(0.1)
     print x.poll()
@@ -301,7 +301,6 @@ def create_book(number):
         if ',' in author:
             a = re.sub(', ', ',', author)
             a = string.split(a, ',')
-            litres_special.append(u'1001   |a %s' % a[0])
             a1 = a[1:]
             for x in a1:
                 litres_special.append(u'7001   |a %s' % x)
