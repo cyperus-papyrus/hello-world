@@ -1,6 +1,6 @@
 #!/bin/bash
 # ВМЕСТО flock
-HOMEDIR=/home/helga/GitHub_Project/marcapp
+HOMEDIR=/home/helga/olgavr/marcapp
 PROGNAME=create_marc
 PID=$HOMEDIR/$PROGNAME.pid
 ################################################################################
@@ -15,7 +15,7 @@ echo "MYPID=$$" > $PID 2>/dev/null
 ################################################################################
 
 cd $HOMEDIR
-/home/helga/GitHub_Project/marcapp/app/bin/python2.7 $HOMEDIR/$PROGNAME.py > $PROGNAME.log 2>&1
+/home/helga/olgavr/venv/bin/python2.7 $HOMEDIR/$PROGNAME.py > $PROGNAME.log 2>&1
 sleep 1
 
 ################################################################################

@@ -37,7 +37,7 @@ class MyForm(Form):
 def t(n):
     if n not in ('SID', '000', '001', '003', '005', '008', '017', '035', '040', '018', '019', '044', '020',
                  '336', '337', '338', '538', '852', '912', '979', '856', '533', 'SYS', 'OWN', 'UID', 'FMT', 'CAT',
-                 'LKR', '954', '955', '956', '010', '011', '012', '013', '014', '015', '100'):
+                 'LKR', '954', '955', '956', '010', '011', '012', '013', '014', '015', '100', '700'):
         return True
     return False
 
@@ -247,7 +247,15 @@ def copy_book(number):
                 litres_special.append(u'020     |a %s'%i)
         else:
             pass
-        litres_special.append(u'1001   |a %s' % author)
+        if ',' in author:
+            a = re.sub(', ', ',', author)
+            a = string.split(a, ',')
+            litres_special.append(u'1001   |a %s' % a[0])
+            a1 = a[1:]
+            for x in a1:
+                litres_special.append(u'7001   |a %s' % x)
+        else:
+            litres_special.append(u'1001   |a %s' % author)
         # добавляем спец. строчки
         lines.extend(litres_special)
         lines.append(u'001     ' + '%0.6i' % int(number))
@@ -290,7 +298,15 @@ def create_book(number):
         lines = []
         # фильтруем
         litres_special.append(u'24510  |a %s |h [Электронный ресурс]' % name)
-        litres_special.append(u'1001   |a %s' % author)
+        if ',' in author:
+            a = re.sub(', ', ',', author)
+            a = string.split(a, ',')
+            litres_special.append(u'1001   |a %s' % a[0])
+            a1 = a[1:]
+            for x in a1:
+                litres_special.append(u'7001   |a %s' % x)
+        else:
+            litres_special.append(u'1001   |a %s' % author)
         isbn = re.sub('\r\n', u'', isbn1, 0, re.M)
         isbn = re.sub('"', u'', isbn, 0, re.M)
         isbn = re.sub(u', ', ',', isbn, 0, re.M)
