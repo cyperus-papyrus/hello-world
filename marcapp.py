@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, json
 from sqlalchemy import create_engine, MetaData
 from wtforms import Form
 from wtforms import SubmitField, TextAreaField
@@ -14,6 +14,11 @@ import pymarc
 import os, os.path
 import time
 import datetime
+import locale
+
+
+locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
+
 
 app = Flask(__name__)
 sql = u"""INSERT IGNORE INTO aleph2 (id, author, title, field, info, info_text)
@@ -65,9 +70,29 @@ def index():
     total = f[0]
     true_c = f[1]
     wrong_c = f[2]
-    print true_c, wrong_c
+    r = 4752
+    last = int(r) - int(total)
     return render_template('index.html', data1=data_t1, data2=data_t2,
-                           s1=folder_size1, s2=folder_size2, tc = true_c, wc = wrong_c, t = total)
+                           s1=folder_size1, s2=folder_size2, tc = true_c, wc = wrong_c, t = total,
+                           r = r, last = last)
+
+
+import subprocess as sb
+
+import time
+
+@app.route('/create_marc_card', methods=['POST', 'GET'])
+def start_create_marc():
+    # d = ['python','run.sh']
+    print "sstart "
+    x = sb.Popen(['/bin/bash', '/home/helga/GitHub_Project/marcapp/run.sh'], stdout=sb.PIPE, stderr=sb.PIPE)
+    #line = x.stdout.readline()
+    time.sleep(0.1)
+    print x.poll()
+    if x.poll() == 3:
+        return json.dumps({'success' : 'already running'}), 200, {'ContentType':'application/json'}
+    # return jsonify(result=u'Отлично, процесс запущен. Обновите браузер через 30 секунд!')
+    return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
 @app.route('/show/<number>')
 def show_book(number):

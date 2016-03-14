@@ -1,11 +1,38 @@
 {% extends "layout.html" %}
 {% block body %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <p>• <a href="/list/0">На главную</a> • <br />
     <p><a href="static/marc_cards.mrc">Файл в формате MARC</a>, создан {{ data1 }}, {{ s1 }} байт</p>
     <p><a href="static/marc_cards.txt">Файл в формате TXT</a>, создан {{ data2 }}, {{ s2 }} байт</p>
+<br />
     <table align="center">
-        <th>Всего готово: {{  t  }} карточек</th>
-        <tr><td> Правильных карточек: </td><td> {{ tc }} </td></tr>
-        <tr><td> Невалидных карточек: </td><td> {{ wc }} </td></tr>
+        <tr><td>Всего книг:</td><td>{{ r }}</td></tr>
+        <tr><td>Из них готово:</td><td>{{  t  }}</td></tr>
+        <tr><td>Карточек, прошедших валидацию:</td><td> {{ tc }} </td></tr>
+        <tr><td>Невалидных карточек:</td><td> {{ wc }} </td></tr>
+        <tr><td>Осталось книг:</td><td>{{ last }}</td></tr>
     </table>
+<script type="text/javascript">
+    $(function ()
+      {
+        $("button:first").click(function()
+        {
+          $.ajax("/create_marc_card",
+          {
+            type: "POST",
+            beforeSend: function(data) {
+              $("#xxx").text("Обновление...");
+            },
+            success: function(data) {
+              $("#xxx").text("Отлично, процесс запущен. Обновите браузер через 30 секунд!");
+              $('.table').load(' .table')
+              $('.p').load(' .p')
+            }
+            });
+        });
+      }
+     );
+</script>
+<button>Создать MARC файл</button>
+<div  id="xxx">Нажмите на кнопку!</div>
 {% endblock %}

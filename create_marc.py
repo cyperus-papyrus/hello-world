@@ -7,6 +7,7 @@ from sqlalchemy import text
 import io
 import os
 import StringIO
+from datetime import datetime
 
 
 def replace_russian_letters(x):
@@ -44,7 +45,7 @@ def field2string(f):
         text = u'%s' % (f.tag)
         for indicator in f.indicators:
             if indicator != '':
-                text += '%s' % indicator
+                 text += '%s' % indicator
             else:
                 text += u' '
         text += u'  ' + u' '.join([u'|%s %s' % subf for subf in f])
@@ -63,9 +64,10 @@ def do_create_marc():
         text("SELECT id, field, info_text FROM marc.aleph2 WHERE id LIKE '%Ru-MoLR' ORDER BY ID, FIELD"))
     r = pymarc.Record(to_unicode=True, force_utf8=True)
     mypath = os.path.dirname(os.path.abspath(__file__))
-    writer = pymarc.MARCWriter(open('%s/static/marc_cards.mrc' % mypath, 'wb'))
-    text_writer = io.open('%s/static/marc_cards.txt' % mypath, 'w', encoding='utf-8')
-    test = io.open('%s/static/bad_marc_cards.txt' % mypath, 'w', encoding='utf-8')
+    time_now = datetime.strftime(datetime.now(), "%H-%M-%S-%f")
+    writer = pymarc.MARCWriter(open('%s/static/marc_cards_%s.mrc' % (mypath, time_now), 'wb'))
+    text_writer = io.open('%s/static/marc_cards_%s.txt' % (mypath, time_now), 'w', encoding='utf-8')
+    test = io.open('%s/static/bad_marc_cards_%s.txt' % (mypath, time_now), 'w', encoding='utf-8')
     (id, field, info) = result.fetchone()
     current_num = id
     process_field(field, info, r)
@@ -100,6 +102,9 @@ def do_create_marc():
     writer.close()
     text_writer.close()
     test.close()
+    os.rename('%s/static/marc_cards_%s.mrc' % (mypath, time_now), '%s/static/marc_cards.mrc' % mypath)
+    os.rename('%s/static/marc_cards_%s.txt' % (mypath, time_now), '%s/static/marc_cards.txt' % mypath)
+    os.rename('%s/static/bad_marc_cards_%s.txt' % (mypath, time_now), '%s/static/bad_marc_cards.mrc' % mypath)
     print count
     print "Bad records counter:", counter
     total = int(count) + int(counter)

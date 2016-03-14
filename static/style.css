@@ -52,12 +52,9 @@ color: #1F1F1F;
 border: 1px solid #d4d4d4;
 border-radius: 1px;
 }
-th {
-font-size: 24px;
-padding: 1px;
-}
+
 td {
 background: #E7E5E5;
-font-size: 19px;
+font-size: 24px;
 padding: 1px;
 }
