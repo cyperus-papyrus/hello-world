@@ -1,24 +1,18 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, render_template, request, redirect, json
 from sqlalchemy import create_engine, MetaData
-from wtforms import Form
-from wtforms import SubmitField, TextAreaField
+from wtforms import Form, SubmitField, TextAreaField
 from wtforms.validators import DataRequired
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Table
-import re
+import re, pymarc, os, os.path, time, datetime, locale
 from sqlalchemy import text
 import string
 from flask import make_response
-import pymarc
-import os, os.path
-import time
-import datetime
-import locale
-
+from titles import overwrite_author
+import subprocess as sb
 
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
-
 
 app = Flask(__name__)
 sql = u"""INSERT IGNORE INTO aleph2 (id, author, title, field, info, info_text)
@@ -46,8 +40,9 @@ def url_for_other_page(page):
     args = request.view_args.copy()
     args['page'] = page
     return url_for(request.endpoint, **args)
-app.jinja_env.globals['url_for_other_page'] = url_for_other_page
 
+
+app.jinja_env.globals['url_for_other_page'] = url_for_other_page
 
 engine = create_engine('mysql://marc:123@localhost/marc?charset=utf8',
                        encoding='utf-8', convert_unicode=True)  # подключение к БД
@@ -58,14 +53,14 @@ aleph2 = Table('aleph2', metadata, autoload=True)
 
 @app.route('/')
 def index():
-    t1 = os.path.getmtime('static/marc_cards.mrc') # дата последнего изменения файла
-    t2 = os.path.getmtime('static/marc_cards.txt') # дата последнего изменения файла
+    t1 = os.path.getmtime('static/marc_cards.mrc')  # дата последнего изменения файла
+    t2 = os.path.getmtime('static/marc_cards.txt')  # дата последнего изменения файла
     # напечатать дату в строковом формате:
     data_t1 = time.ctime(t1)
     data_t2 = time.ctime(t2)
     folder_size1 = os.path.getsize('static/marc_cards.mrc')
     folder_size2 = os.path.getsize('static/marc_cards.txt')
-    f = open('num_file.txt','r')
+    f = open('num_file.txt', 'r')
     f = f.readlines()
     total = f[0]
     true_c = f[1]
@@ -73,26 +68,23 @@ def index():
     r = 4752
     last = int(r) - int(total)
     return render_template('index.html', data1=data_t1, data2=data_t2,
-                           s1=folder_size1, s2=folder_size2, tc = true_c, wc = wrong_c, t = total,
-                           r = r, last = last)
+                           s1=folder_size1, s2=folder_size2, tc=true_c, wc=wrong_c, t=total,
+                           r=r, last=last)
 
-
-import subprocess as sb
-
-import time
 
 @app.route('/create_marc_card', methods=['POST', 'GET'])
 def start_create_marc():
     # d = ['python','run.sh']
     print "sstart "
     x = sb.Popen(['/bin/bash', '/home/helga/olgavr/marcapp/run.sh'], stdout=sb.PIPE, stderr=sb.PIPE)
-    #line = x.stdout.readline()
+    # line = x.stdout.readline()
     time.sleep(0.1)
     print x.poll()
     if x.poll() == 3:
-        return json.dumps({'success' : 'already running'}), 200, {'ContentType':'application/json'}
+        return json.dumps({'success': 'already running'}), 200, {'ContentType': 'application/json'}
     # return jsonify(result=u'Отлично, процесс запущен. Обновите браузер через 30 секунд!')
-    return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
+    return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+
 
 @app.route('/show/<number>')
 def show_book(number):
@@ -147,9 +139,9 @@ def show_book(number):
     bibkomcard = []  # из карточек для каждой книги находим самую длинную и сохраняем ее
     bibkomtitle = excel[0][2]
     sql = "SELECT * FROM marc.aleph2  WHERE id LIKE :string and (title='%s') ORDER BY FIELD;" % bibkomtitle
-    result_bibkom = connection.execute(text(sql),string="%BIBKOM")
+    result_bibkom = connection.execute(text(sql), string="%BIBKOM")
     for row_bibkom in result_bibkom.fetchall():
-        field_bib =row_bibkom[3]
+        field_bib = row_bibkom[3]
         info_bib = row_bibkom[5]
         bibkomcard.append(dict(field='%-5s' % field_bib, info=info_bib))
     (result_count,) = connection.execute("select count(*) from excel e where e.number<=%s order by number" % number)
@@ -173,7 +165,7 @@ def update_book(number):
         connection.execute("DELETE FROM aleph2 WHERE  id=%(id)s",
                            {'id': litresnum})
         for line in form.card_lines.data.split('\n'):
-            line = re.sub(u'\t',u'   ',line,0) # копипейст с сайта ргб могут быть табуляции
+            line = re.sub(u'\t', u'   ', line, 0)  # копипейст с сайта ргб могут быть табуляции
             tag = line[:5]
             info = line[5:250]
             info_text = line[5:]
@@ -183,7 +175,8 @@ def update_book(number):
             if tag == '':
                 continue
             r = connection.execute(sql,
-                                   {'id': litresnum, 'author': author, 'title': name, 'field': tag, 'info': info, 'info_text': info_text})
+                                   {'id': litresnum, 'author': author, 'title': name, 'field': tag, 'info': info,
+                                    'info_text': info_text})
         connection.execute("COMMIT;")
     return redirect('/show/' + number)
 
@@ -191,16 +184,17 @@ def update_book(number):
 @app.route('/copy/<number>', methods=['POST'])
 def copy_book(number):
     litres_special = [u'003     RU-MoLR',
-                  u'005     20160201125050.0',
-                  u'007     cr^cn^c|||a|cba',
-                  u'040     |b rus |c rumolr |e rcr',
-                  u'044     |a ru',
-                  u'538     |a Системные требования: Adobe Digital Editions',
-                  u'000     00000nmm^a2200000^i^4500',
-                  u'979     |a dluniv |a dlopen']
+                      u'005     20160201125050.0',
+                      u'007     cr^cn^c|||a|cba',
+                      u'040     |b rus |c rumolr |e rcr',
+                      u'044     |a ru',
+                      u'538     |a Системные требования: Adobe Digital Editions',
+                      u'000     00000nmm^a2200000^i^4500',
+                      u'979     |a dluniv |a dlopen']
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
-    r = connection.execute("select author, name, format, filename, isbn, pubhouse from excel where (number='%s');" % number)  # забираем строчку задания
+    r = connection.execute(
+        "select author, name, format, filename, isbn, pubhouse from excel where (number='%s');" % number)  # забираем строчку задания
     (author, name, frmt, filename, isbn1, pubhouse) = r.fetchone()
     form = MyForm(request.form)  # объявляем формы из класса выше
     if request.method == 'POST':
@@ -211,7 +205,7 @@ def copy_book(number):
         lines = []
         # фильтруем
         for line in form.card_lines.data.split('\n'):
-            line = re.sub(u'\t',u'   ',line,0) # копипейст с сайта ргб могут быть табуляции
+            line = re.sub(u'\t', u'   ', line, 0)  # копипейст с сайта ргб могут быть табуляции
             if line[:3] == '245':
                 line1 = re.search(u'[\|]+h +\[*[Тт]+екст\]* +[\|:]', line)
                 if line1 is not None:
@@ -225,9 +219,10 @@ def copy_book(number):
                 lines.append(line)
         mime_str = u'application/pdf'
         if frmt == 'epub':
-           mime_str = u'application/epub+zip'
+            mime_str = u'application/epub+zip'
         litres_special.append(
-                  u'8561    |a rsl.ru |f %s |n Российская государственная библиотека, Москва, РФ |q %s'%(filename,mime_str))
+            u'8561    |a rsl.ru |f %s |n Российская государственная библиотека, Москва, РФ |q %s' % (
+                filename, mime_str))
         isbn = re.sub('\r\n', u'', isbn1, 0, re.M)
         isbn = re.sub('"', u'', isbn, 0, re.M)
         isbn = re.sub(u', ', ',', isbn, 0, re.M)
@@ -244,18 +239,13 @@ def copy_book(number):
                 isbn_lst = []
                 isbn_lst.append(isbn)
             for i in isbn_lst:
-                litres_special.append(u'020     |a %s'%i)
+                litres_special.append(u'020     |a %s' % i)
         else:
             pass
-        if ',' in author:
-            a = re.sub(', ', ',', author)
-            a = string.split(a, ',')
-            litres_special.append(u'1001   |a %s' % a[0])
-            a1 = a[1:]
-            for x in a1:
-                litres_special.append(u'7001   |a %s' % x)
-        else:
-            litres_special.append(u'1001   |a %s' % author)
+        right_author = overwrite_author(author)
+        litres_special.append(u'1001   |a %s' % right_author[0])
+        for right_author1 in right_author[1:]:
+            litres_special.append(u'7001   |a %s' % right_author1)
         # добавляем спец. строчки
         lines.extend(litres_special)
         lines.append(u'001     ' + '%0.6i' % int(number))
@@ -270,7 +260,8 @@ def copy_book(number):
             info = re.sub(u'^\s+', '', info, 0)
             info_text = re.sub(u'^\s+', '', info_text, 0)
             r = connection.execute(sql,
-                                   {'id': litresnum, 'author': author, 'title': name, 'field': tag, 'info': info, 'info_text': info_text})
+                                   {'id': litresnum, 'author': author, 'title': name, 'field': tag, 'info': info,
+                                    'info_text': info_text})
         connection.execute("COMMIT;")
     return redirect('/show/' + number)
 
@@ -278,17 +269,18 @@ def copy_book(number):
 @app.route('/create/<number>', methods=['POST'])
 def create_book(number):
     litres_special = [u'003     RU-MoLR',
-                  u'005     20160201125050.0',
-                  u'007     cr^cn^c|||a|cba',
-                  u'040     |b rus |c rumolr |e rcr',
-                  u'044     |a ru',
-                  u'0410    |a rus',
-                  u'538     |a Системные требования: Adobe Digital Editions',
-                  u'000     00000nmm^a2200000^i^4500',
-                  u'979     |a dluniv |a dlopen']
+                      u'005     20160201125050.0',
+                      u'007     cr^cn^c|||a|cba',
+                      u'040     |b rus |c rumolr |e rcr',
+                      u'044     |a ru',
+                      u'0410    |a rus',
+                      u'538     |a Системные требования: Adobe Digital Editions',
+                      u'000     00000nmm^a2200000^i^4500',
+                      u'979     |a dluniv |a dlopen']
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
-    r = connection.execute("select author, name, format, filename, isbn, pubhouse from excel where (number='%s');" % number)  # забираем строчку задания
+    r = connection.execute(
+        "select author, name, format, filename, isbn, pubhouse from excel where (number='%s');" % number)  # забираем строчку задания
     (author, name, frmt, filename, isbn1, pubhouse) = r.fetchone()
     if request.method == 'POST':
         litresnum = '%0.6i' % int(number) + 'Ru-MoLR'
@@ -298,14 +290,10 @@ def create_book(number):
         lines = []
         # фильтруем
         litres_special.append(u'24510  |a %s |h [Электронный ресурс]' % name)
-        if ',' in author:
-            a = re.sub(', ', ',', author)
-            a = string.split(a, ',')
-            a1 = a[1:]
-            for x in a1:
-                litres_special.append(u'7001   |a %s' % x)
-        else:
-            litres_special.append(u'1001   |a %s' % author)
+        right_author = overwrite_author(author)
+        litres_special.append(u'1001   |a %s' % right_author[0])
+        for right_author1 in right_author[1:]:
+            litres_special.append(u'7001   |a %s' % right_author1)
         isbn = re.sub('\r\n', u'', isbn1, 0, re.M)
         isbn = re.sub('"', u'', isbn, 0, re.M)
         isbn = re.sub(u', ', ',', isbn, 0, re.M)
@@ -322,14 +310,15 @@ def create_book(number):
                 isbn_lst = []
                 isbn_lst.append(isbn1)
             for i in isbn_lst:
-                litres_special.append(u'020     |a %s'%i)
+                litres_special.append(u'020     |a %s' % i)
         else:
             pass
         mime_str = u'application/pdf'
         if frmt == 'epub':
-           mime_str = u'application/epub+zip'
+            mime_str = u'application/epub+zip'
         litres_special.append(
-                  u'8561    |a rsl.ru |f %s |n Российская государственная библиотека, Москва, РФ |q %s'%(filename,mime_str))
+            u'8561    |a rsl.ru |f %s |n Российская государственная библиотека, Москва, РФ |q %s' % (
+                filename, mime_str))
         # добавляем спец. строчки
         lines.extend(litres_special)
         lines.append(u'001     ' + '%0.6i' % int(number))
@@ -344,7 +333,8 @@ def create_book(number):
             info = re.sub(u'^\s+', '', info, 0)
             info_text = re.sub(u'^\s+', '', info_text, 0)
             r = connection.execute(sql,
-                                   {'id': litresnum, 'author': author, 'title': name, 'field': tag, 'info': info, 'info_text': info_text})
+                                   {'id': litresnum, 'author': author, 'title': name, 'field': tag, 'info': info,
+                                    'info_text': info_text})
         connection.execute("COMMIT;")
     return redirect('/show/' + number)
 
@@ -386,40 +376,43 @@ def excel(number):
 
 
 import StringIO
+
+
 @app.route('/getfile/<number>', methods=['GET', 'POST'])
 def make_marc(number):
+    global tag1, tag2
     if request.method == 'POST':
         connection = engine.connect()
         connection.execute("SET character_set_connection=utf8")
         r = pymarc.Record(to_unicode=True, force_utf8=True)
         litresnum = '%0.6i' % int(number) + 'Ru-MoLR'
         result = connection.execute(
-        "SELECT field, info_text FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD " % litresnum)
+            "SELECT field, info_text FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD " % litresnum)
         for (field, info_text) in result.fetchall():
             field = u'%-5s' % field
-            info = re.sub(u'^\s+',u'',info_text)
+            info = re.sub(u'^\s+', u'', info_text)
             tag = field[:3]
-            if len(tag)<3:
+            if len(tag) < 3:
                 continue
             elif tag == '000':
-                r.leader = re.sub(u'\s',u'',info)
+                r.leader = re.sub(u'\s', u'', info)
             elif tag < '010' and tag.isdigit():
-                r.add_field(pymarc.Field(tag=tag, data=re.sub(u'\s',u'',info)))
-            else :
-                line_pymarc_onebyone = string.split(info,'|')
-                subfields=[]
+                r.add_field(pymarc.Field(tag=tag, data=re.sub(u'\s', u'', info)))
+            else:
+                line_pymarc_onebyone = string.split(info, '|')
+                subfields = []
                 for oneline in line_pymarc_onebyone:
-                    if len(oneline)<2:
+                    if len(oneline) < 2:
                         continue
                     # print '** ',i nfo
                     # print '== ', len(oneline)
                     # print '>> ',oneline
-                    tag1=u'%s'%field[3]
-                    tag2=u'%s'%field[4]
+                    tag1 = u'%s' % field[3]
+                    tag2 = u'%s' % field[4]
                     subfields.append(oneline[0])
-                    subfield_value = re.sub(u'\s*$',u'', re.sub(u'^\s*',u'',oneline[1:]) )
+                    subfield_value = re.sub(u'\s*$', u'', re.sub(u'^\s*', u'', oneline[1:]))
                     subfields.append(subfield_value)
-                r.add_field(pymarc.Field(tag=tag, indicators=[tag1,tag2], subfields=subfields))
+                r.add_field(pymarc.Field(tag=tag, indicators=[tag1, tag2], subfields=subfields))
         # This is the key: Set the right header for the response
         # to be downloaded, instead of just printed on the browser
         # resp = r.as_marc()
@@ -430,7 +423,7 @@ def make_marc(number):
         # print resp.getvalue()
         response = make_response(resp.getvalue())
         writer.close(close_fh=False)
-        with open('bbb.xml','wb') as f2:
+        with open('bbb.xml', 'wb') as f2:
             f2.write(pymarc.marcxml.record_to_xml(r))
             f2.close()
         name_number = '%0.5i' % int(number)
