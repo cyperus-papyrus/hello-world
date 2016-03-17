@@ -136,20 +136,12 @@ def show_book(number):
         "SELECT id, author, title, field, info_text FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD " % litresnum)
     for (id, author, title, field, info_text) in result.fetchall():
         litrescard.append(dict(field='%-5s' % field, info=info_text))
-    bibkomcard = []  # из карточек для каждой книги находим самую длинную и сохраняем ее
-    bibkomtitle = excel[0][2]
-    sql = "SELECT * FROM marc.aleph2  WHERE id LIKE :string and (title='%s') ORDER BY FIELD;" % bibkomtitle
-    result_bibkom = connection.execute(text(sql), string="%BIBKOM")
-    for row_bibkom in result_bibkom.fetchall():
-        field_bib = row_bibkom[3]
-        info_bib = row_bibkom[5]
-        bibkomcard.append(dict(field='%-5s' % field_bib, info=info_bib))
     (result_count,) = connection.execute("select count(*) from excel e where e.number<=%s order by number" % number)
     my_list_int = (int(result_count[0]) - 1) / 100
     print int(result_count[0])
     print datetime.datetime.now(), u'Загрузили страницу show %s' % number
     return render_template('show_entries.html', mybooks=zip(mybooks, excel),
-                           excel=excel, form=form, litrescard=litrescard, bibkomcard=bibkomcard, int_lst=my_list_int)
+                           excel=excel, form=form, litrescard=litrescard, int_lst=my_list_int)
 
 
 @app.route('/update/<number>', methods=['POST'])

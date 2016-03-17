@@ -35,16 +35,6 @@
             <br />
         {{form.copy(value="Копировать карточку!")}}</form></div>
         {% endif %}
-        {% if bibkomcard %}
-        <div>
-          <form method="post" action='/copy/{{ excel[0] }}'><table>
-              <tr>
-                <td><textarea name="card_lines"  rows="50">{% for strbibcard in bibkomcard %}{{ strbibcard.field }}  {{ strbibcard.info }}{% endfor %}</textarea></td>
-              </tr>
-          </table>
-          {{form.copy(value="Копировать карточку!")}}</form>
-        </div>
-        {% endif %}
     </div>
     <br />
             <div style="width: 100%;">
