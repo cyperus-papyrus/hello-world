@@ -240,6 +240,8 @@ def copy_book(number):
             litres_special.append(u'7001   |a %s' % right_author1)
         # добавляем спец. строчки
         lines.extend(litres_special)
+        if number > 100000:
+            number = number[2:]
         lines.append(u'001     ' + '%0.6i' % int(number))
         # а теперь засовываем
         for line in lines:
@@ -314,6 +316,8 @@ def create_book(number):
                 filename, mime_str))
         # добавляем спец. строчки
         lines.extend(litres_special)
+        if number > 100000:
+            number = number[2:]
         lines.append(u'001     ' + '%0.6i' % int(number))
         # а теперь засовываем
         for line in lines:
