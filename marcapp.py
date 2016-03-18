@@ -282,6 +282,7 @@ def create_book(number):
         lines = []
         # фильтруем
         litres_special.append(u'24510  |a %s |h [Электронный ресурс]' % name)
+        litres_special.append(u'260    |b %s ' % pubhouse)
         right_author = overwrite_author(author)
         litres_special.append(u'1001   |a %s' % right_author[0])
         for right_author1 in right_author[1:]:
