@@ -241,8 +241,10 @@ def copy_book(number):
         # добавляем спец. строчки
         lines.extend(litres_special)
         if number > 100000:
-            number = number[2:]
-        lines.append(u'001     ' + '%0.6i' % int(number))
+            number1 = number[2:]
+        else:
+            number1 = number
+        lines.append(u'001     ' + '%0.6i' % int(number1))
         # а теперь засовываем
         for line in lines:
             tag = line[:5]
@@ -317,8 +319,10 @@ def create_book(number):
         # добавляем спец. строчки
         lines.extend(litres_special)
         if number > 100000:
-            number = number[2:]
-        lines.append(u'001     ' + '%0.6i' % int(number))
+            number1 = number[2:]
+        else:
+            number1 = number
+        lines.append(u'001     ' + '%0.6i' % int(number1))
         # а теперь засовываем
         for line in lines:
             tag = line[:5]
