@@ -65,7 +65,7 @@ def index():
     total = f[0]
     true_c = f[1]
     wrong_c = f[2]
-    r = 4752
+    r = 4784
     last = int(r) - int(total)
     return render_template('index.html', data1=data_t1, data2=data_t2,
                            s1=folder_size1, s2=folder_size2, tc=true_c, wc=wrong_c, t=total,
