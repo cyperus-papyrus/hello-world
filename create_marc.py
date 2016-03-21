@@ -75,7 +75,8 @@ def do_create_marc():
         print number
         number = number + u'Ru-MoLR'
         nums.append(number)
-    nums1 = ', '.join(nums)
+    nums1 = '\', \''.join(nums)
+    nums1 = '\'' + nums1 + '\''
     result = connection.execute("SELECT id, field, info_text FROM marc.aleph2 WHERE id IN('%s') ORDER BY ID, FIELD;" % nums1)
     r = pymarc.Record(to_unicode=True, force_utf8=True)
     (id, field, info) = result.fetchone()
