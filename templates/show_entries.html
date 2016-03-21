@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-<p>• <a href="/list/0">На главную</a> • <a href="/list/{{ int_lst }}">Вернуться к выбору книги</a> • </p>
+<p>• <a href="/list/0">К списку книг</a> • <a href="/list/{{ int_lst }}">Вернуться на страницу-список выбора книги</a> • <a href="/">На стартовую страницу</a> • <br /></p>
   {% for book, excel in mybooks %}
     <div><h1>{{ excel[1] }},  « {{ excel[2] }} »</h1>
     <h2>Номер {{ excel[0] }}, ISBN: {{ excel[4] }}, {{ excel[3] }}.</h2>

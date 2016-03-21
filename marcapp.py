@@ -6,7 +6,6 @@ from wtforms.validators import DataRequired
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Table
 import re, pymarc, os, os.path, time, datetime, locale
-from sqlalchemy import text
 import string
 from flask import make_response
 from titles import overwrite_author
@@ -70,6 +69,32 @@ def index():
     return render_template('index.html', data1=data_t1, data2=data_t2,
                            s1=folder_size1, s2=folder_size2, tc=true_c, wc=wrong_c, t=total,
                            r=r, last=last)
+
+
+@app.route('/check_list')
+def check():
+    connection = engine.connect()
+    connection.execute("SET character_set_connection=utf8")
+    books = []
+    for number in xrange(0, 48):
+        result = connection.execute('select number, name from excel order by number limit %s00,100;' % number)
+        excel = []
+        check_lr_num = 0
+        for row in result.fetchall():
+            excel.append(row)
+        for element in excel:
+            element0 = element[0]
+            litresnum = '%0.6i' % int(element0) + 'Ru-MoLR'
+            result2 = connection.execute("select * from aleph2 where (id='%s');" % litresnum)
+            l = []
+            if result2.fetchall() != l:
+                check_lr = (u'Книга обработана!',)
+            else:
+                check_lr = ('',)
+                check_lr_num += 1
+        books.append((check_lr_num, number))
+    print books
+    return render_template('check.html', books = books)
 
 
 @app.route('/create_marc_card', methods=['POST', 'GET'])

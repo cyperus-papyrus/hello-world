@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block body %}
+<p>• <a href="/list/0">К списку книг</a> • <a href="/">На стартовую страницу</a> • <br />
+    <table align="center">
+    <tr><td>№ страницы: </td><td>Несделанных карточек:</td></tr>
+    {% for book in books %}
+        <tr><td>{{ book[1] }}</td><td>{{ book[0] }}</td></tr>
+    {% endfor %}
+    </table>
+{% endblock %}
