@@ -61,44 +61,53 @@ def do_create_marc():
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
     result = connection.execute(
-        text("SELECT id, field, info_text FROM marc.aleph2 WHERE id LIKE '%Ru-MoLR' ORDER BY ID, FIELD"))
-    r = pymarc.Record(to_unicode=True, force_utf8=True)
+        text("SELECT number, author, name FROM marc.excel WHERE (number>'100000') ORDER BY number;"))
+    # 'SELECT id, field, info_text FROM marc.aleph2 WHERE id LIKE '%Ru-MoLR' ORDER BY ID, FIELD'
     mypath = os.path.dirname(os.path.abspath(__file__))
     time_now = datetime.strftime(datetime.now(), "%H-%M-%S-%f")
-    writer = pymarc.MARCWriter(open('%s/static/marc_cards_%s.mrc' % (mypath, time_now), 'wb'))
-    text_writer = io.open('%s/static/marc_cards_%s.txt' % (mypath, time_now), 'w', encoding='utf-8')
-    test = io.open('%s/static/bad_marc_cards_%s.txt' % (mypath, time_now), 'w', encoding='utf-8')
-    (id, field, info) = result.fetchone()
-    current_num = id
-    process_field(field, info, r)
-    count = 0
-    counter = 0
+    writer = pymarc.MARCWriter(open('%s/static/marc_cards_%s_32.mrc' % (mypath, time_now), 'wb'))
+    text_writer = io.open('%s/static/marc_cards_%s_32.txt' % (mypath, time_now), 'w', encoding='utf-8')
+    test = io.open('%s/static/bad_marc_cards_%s_32.txt' % (mypath, time_now), 'w', encoding='utf-8')
+    nums = []
+    for row in result.fetchall():
+        number = row[0]
+        number = number[2:]
+        number = number + u'Ru-MoLR'
+        nums.append(number)
+    for n in nums:
+        result = connection.execute("SELECT id, field, info_text FROM marc.aleph2 WHERE (id='%s') ORDER BY ID, FIELD;" % n)
+        r = pymarc.Record(to_unicode=True, force_utf8=True)
+        (id, field, info) = result.fetchone()
+        current_num = id
+        process_field(field, info, r)
+        count = 0
+        counter = 0
 
-    for (id, field, info) in result.fetchall():
-        if id == current_num:
-            process_field(field, info, r)
+        for (id, field, info) in result.fetchall():
+            if id == current_num:
+                process_field(field, info, r)
+            else:
+                current_num = id
+                test_string = StringIO.StringIO()
+                testwriter = pymarc.MARCWriter(test_string)
+                testwriter.write(r)
+                test1 = pymarc.MARCReader(test_string.getvalue(), to_unicode=True, force_utf8=True)
+                try:
+                    for x in test1:
+                        count += 1
+                except UnicodeDecodeError:
+                    counter += 1
+                    test.write(record2text(r) + u'\n\n\n')
+                testwriter.close()
+                writer.write(r)
+                text_writer.write(record2text(r) + u'\n\n\n')
+                r = pymarc.Record(to_unicode=True, force_utf8=True)
+                process_field(field, info, r)
+
         else:
-            current_num = id
-            test_string = StringIO.StringIO()
-            testwriter = pymarc.MARCWriter(test_string)
-            testwriter.write(r)
-            test1 = pymarc.MARCReader(test_string.getvalue(), to_unicode=True, force_utf8=True)
-            try:
-                for x in test1:
-                    count += 1
-            except UnicodeDecodeError:
-                counter += 1
-                test.write(record2text(r) + u'\n\n\n')
-            testwriter.close()
             writer.write(r)
-            text_writer.write(record2text(r) + u'\n\n\n')
-            r = pymarc.Record(to_unicode=True, force_utf8=True)
-            process_field(field, info, r)
-
-    else:
-        writer.write(r)
-        count += 1
-        text_writer.write(record2text(r))
+            count += 1
+            text_writer.write(record2text(r))
     writer.close()
     text_writer.close()
     test.close()
@@ -111,7 +120,7 @@ def do_create_marc():
     num_file = open('%s/num_file.txt'%mypath, 'w')
     num_file.write(str(total) + u'\n' + str(count) + u'\n' + str(counter))
     num_file.close()
-    
+
 if __name__ == "__main__":
     do_create_marc()
     
