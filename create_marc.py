@@ -71,7 +71,8 @@ def do_create_marc():
     nums = []
     for row in result.fetchall():
         number = row[0]
-        number = number[2:]
+        number = str(number)
+        print number
         number = number + u'Ru-MoLR'
         nums.append(number)
     for n in nums:
@@ -111,9 +112,9 @@ def do_create_marc():
     writer.close()
     text_writer.close()
     test.close()
-    os.rename('%s/static/marc_cards_%s.mrc' % (mypath, time_now), '%s/static/marc_cards.mrc' % mypath)
-    os.rename('%s/static/marc_cards_%s.txt' % (mypath, time_now), '%s/static/marc_cards.txt' % mypath)
-    os.rename('%s/static/bad_marc_cards_%s.txt' % (mypath, time_now), '%s/static/bad_marc_cards.txt' % mypath)
+    os.rename('%s/static/marc_cards_%s_32.mrc' % (mypath, time_now), '%s/static/marc_cards_32.mrc' % mypath)
+    os.rename('%s/static/marc_cards_%s_32.txt' % (mypath, time_now), '%s/static/marc_cards_32.txt' % mypath)
+    os.rename('%s/static/bad_marc_cards_%s_32.txt' % (mypath, time_now), '%s/static/bad_marc_cards_32.txt' % mypath)
     print count
     print "Bad records counter:", counter
     total = int(count) + int(counter)
