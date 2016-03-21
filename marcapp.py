@@ -381,14 +381,16 @@ def excel(number):
         result2 = connection.execute("select * from aleph2 where (id='%s');" % litresnum)
         element = tuple(element)
         l = []
-        if result1.fetchall() != l:
-            check_rgb = ('',)
-        else:
-            check_rgb = (u'Нет найденных карточек!',)
+        # if result1.fetchall() != l:
+        #     check_rgb = ('',)
+        # else:
+        #     check_rgb = (u'Нет найденных карточек!',)
         if result2.fetchall() != l:
             check_lr = (u'Книга обработана!',)
+            check_rgb = (u'',)
         else:
-            check_lr = ('',)
+            check_rgb = (u'Нет найденных карточек!',)
+            check_lr = (u'',)
         books.append(element + check_lr + check_rgb)
     # print books
     next_number = int(number) + 1
