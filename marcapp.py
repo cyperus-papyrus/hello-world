@@ -93,7 +93,7 @@ def check():
                 check_lr = ('',)
                 check_lr_num += 1
         books.append((check_lr_num, number))
-    print books
+    # print books
     return render_template('check.html', books = books)
 
 
