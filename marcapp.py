@@ -181,6 +181,7 @@ def show_book(number):
     logging.info(u'%s'%user_client)
     h = hashlib.md5(number)
     md5 = h.hexdigest()
+    user_client_info = request.user_agent.string
     user_client = hashlib.md5(user_client)
     user_client = user_client.hexdigest()
     connection.execute("INSERT INTO ufollow(md5, ip, user_client, list_number, user_client_info) VALUES ('%s', '%s', '%s', '%s', '%s')" % (
