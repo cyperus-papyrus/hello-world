@@ -11,11 +11,9 @@ from titles import overwrite_author
 import subprocess as sb
 import hashlib
 import logging
-import logging.config
 
 logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
                      level=logging.DEBUG, filename=u'example.log')
-logging.config.listen(port=8083)
 
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 
@@ -166,17 +164,17 @@ def show_book(number):
         litrescard.append(dict(field='%-5s' % field, info=info_text))
     (result_count,) = connection.execute("select count(*) from excel e where e.number<=%s order by number" % number)
     my_list_int = (int(result_count[0]) - 1) / 100
-    print int(result_count[0])
-    print datetime.datetime.now(), u'Загрузили страницу show %s' % number
+    logging.info(u'Страница show %s' % number)
 
     h = hashlib.md5(number)
     md5 = h.hexdigest()
     ip = request.environ['REMOTE_ADDR']
+    user_client_info = request.user_agent.string
     user_client = request.user_agent.string
     user_client = hashlib.md5(user_client)
     user_client = user_client.hexdigest()
-    connection.execute("INSERT INTO ufollow(md5, ip, user_client, list_number) VALUES ('%s', '%s', '%s', '%s')" % (
-    md5, ip, user_client, number))
+    connection.execute("INSERT INTO ufollow(md5, ip, user_client, list_number, user_client_info) VALUES ('%s', '%s', '%s', '%s', '%s')" % (
+    md5, ip, user_client, number, user_client_info))
     return render_template('show_entries.html', mybooks=zip(mybooks, excel),
                            excel=excel, form=form, litrescard=litrescard, int_lst=my_list_int)
 
@@ -428,7 +426,7 @@ def excel(number):
     prev_number = int(number) - 1
     if prev_number < 0:
         prev_number = 0
-    print datetime.datetime.now(), u'Загрузили страницу list номер %s' % number
+    logging.info(u'Загрузили страницу list номер %s' % number)
     return render_template('show.html', excel=books, number1=next_number, number2=prev_number)
 
 
