@@ -403,7 +403,7 @@ def excel(number):
             user_client = 0
         if user_client != 0 and ip != 0:
             if user_client != user_client_curr and ip != ip_curr:
-                check_follow = (u' !!! Карточка в работе ✍',)
+                check_follow = (u' На карточку кто-то зашел (~15 минут назад) ✍',)
             elif user_client != user_client_curr and ip == ip_curr:
                 check_follow = (u'',)
             else:
