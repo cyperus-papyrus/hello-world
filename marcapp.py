@@ -69,7 +69,7 @@ def index():
     wrong_c = f[2]
     r = 4784
     last = int(r) - int(total)
-    logging.info(str(ip), str(user_client), u'зашел на главную страницу')
+    logging.info(u'зашел на главную страницу')
     return render_template('index.html', data1=data_t1, data2=data_t2,
                            s1=folder_size1, s2=folder_size2, tc=true_c, wc=wrong_c, t=total,
                            r=r, last=last)
