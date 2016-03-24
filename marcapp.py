@@ -4,7 +4,7 @@ from sqlalchemy import create_engine, MetaData
 from wtforms import Form, SubmitField, TextAreaField
 from wtforms.validators import DataRequired
 from sqlalchemy.orm import sessionmaker
-import re, pymarc, os, os.path, time, datetime, locale
+import re, pymarc, os, os.path, time, locale
 import string
 from flask import make_response
 from titles import overwrite_author
@@ -53,6 +53,8 @@ metadata = MetaData(bind=engine)
 
 @app.route('/')
 def index():
+    ip = request.environ['REMOTE_ADDR']
+    user_client = request.user_agent.string
     t1 = os.path.getmtime('static/marc_cards.mrc')  # дата последнего изменения файла
     t2 = os.path.getmtime('static/marc_cards.txt')  # дата последнего изменения файла
     # напечатать дату в строковом формате:
@@ -67,6 +69,7 @@ def index():
     wrong_c = f[2]
     r = 4784
     last = int(r) - int(total)
+    logging.info(ip, user_client, u'зашел на главную страницу')
     return render_template('index.html', data1=data_t1, data2=data_t2,
                            s1=folder_size1, s2=folder_size2, tc=true_c, wc=wrong_c, t=total,
                            r=r, last=last)
@@ -74,6 +77,8 @@ def index():
 
 @app.route('/check_list')
 def check():
+    ip = request.environ['REMOTE_ADDR']
+    user_client = request.user_agent.string
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
     books = []
@@ -95,20 +100,23 @@ def check():
                 check_lr_num += 1
         books.append((check_lr_num, number))
     # print books
+    logging.info(ip, user_client, u'зашел на check')
     return render_template('check.html', books=books)
 
 
 @app.route('/create_marc_card', methods=['POST', 'GET'])
 def start_create_marc():
+    ip = request.environ['REMOTE_ADDR']
+    user_client = request.user_agent.string
     # d = ['python','run.sh']
     print "sstart "
     x = sb.Popen(['/bin/bash', '/home/helga/olgavr/marcapp/run.sh'], stdout=sb.PIPE, stderr=sb.PIPE)
     # line = x.stdout.readline()
     time.sleep(0.1)
-    print x.poll()
+    logging.info(ip, u'скачал файл с главной', x.poll())
     if x.poll() == 3:
+        logging.debug(ip, user_client, u'Слишком часто нажимает!1')
         return json.dumps({'success': 'already running'}), 200, {'ContentType': 'application/json'}
-    # return jsonify(result=u'Отлично, процесс запущен. Обновите браузер через 30 секунд!')
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
@@ -164,13 +172,11 @@ def show_book(number):
         litrescard.append(dict(field='%-5s' % field, info=info_text))
     (result_count,) = connection.execute("select count(*) from excel e where e.number<=%s order by number" % number)
     my_list_int = (int(result_count[0]) - 1) / 100
-    logging.info(u'Страница show %s' % number)
-
+    ip = request.environ['REMOTE_ADDR']
+    user_client = request.user_agent.string
+    logging.info(ip, user_client, u'Страница show %s' % number)
     h = hashlib.md5(number)
     md5 = h.hexdigest()
-    ip = request.environ['REMOTE_ADDR']
-    user_client_info = request.user_agent.string
-    user_client = request.user_agent.string
     user_client = hashlib.md5(user_client)
     user_client = user_client.hexdigest()
     connection.execute("INSERT INTO ufollow(md5, ip, user_client, list_number, user_client_info) VALUES ('%s', '%s', '%s', '%s', '%s')" % (
@@ -205,6 +211,9 @@ def update_book(number):
                                    {'id': litresnum, 'author': author, 'title': name, 'field': tag, 'info': info,
                                     'info_text': info_text})
         connection.execute("COMMIT;")
+    ip = request.environ['REMOTE_ADDR']
+    user_client = request.user_agent.string
+    logging.info(ip, user_client, u'update %s'%number)
     return redirect('/show/' + number)
 
 
@@ -294,6 +303,9 @@ def copy_book(number):
                                    {'id': litresnum, 'author': author, 'title': name, 'field': tag, 'info': info,
                                     'info_text': info_text})
         connection.execute("COMMIT;")
+    ip = request.environ['REMOTE_ADDR']
+    user_client = request.user_agent.string
+    logging.info(ip, user_client, u'copy %s'%number)
     return redirect('/show/' + number)
 
 
@@ -372,6 +384,9 @@ def create_book(number):
                                    {'id': litresnum, 'author': author, 'title': name, 'field': tag, 'info': info,
                                     'info_text': info_text})
         connection.execute("COMMIT;")
+    ip = request.environ['REMOTE_ADDR']
+    user_client = request.user_agent.string
+    logging.info(ip, user_client, u'create card %s'%number)
     return redirect('/show/' + number)
 
 
@@ -437,6 +452,8 @@ import StringIO
 def make_marc(number):
     global tag1, tag2
     if request.method == 'POST':
+        ip = request.environ['REMOTE_ADDR']
+        user_client = request.user_agent.string
         connection = engine.connect()
         connection.execute("SET character_set_connection=utf8")
         r = pymarc.Record(to_unicode=True, force_utf8=True)
@@ -484,6 +501,9 @@ def make_marc(number):
         name_number = '%0.5i' % int(number)
         response.headers["Content-Disposition"] = "attachment; filename=book%s.mrc" % name_number
         response.headers["Content-Type"] = "application/octet-stream"
+        ip = request.environ['REMOTE_ADDR']
+        user_client = request.user_agent.string
+        logging.info(ip, user_client, u'get marc file of %s card'%number)
         # print r
         return response
 
