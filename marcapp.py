@@ -12,7 +12,7 @@ import subprocess as sb
 import hashlib
 import logging
 
-logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
+logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-6s [%(asctime)s]  %(message)s',
                      level=logging.DEBUG, filename=u'example.log')
 
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
@@ -69,7 +69,8 @@ def index():
     wrong_c = f[2]
     r = 4784
     last = int(r) - int(total)
-    logging.info(u'зашел на главную страницу')
+    logging.info(u'%s зашел на главную страницу' % ip)
+    logging.info(u'%s'%user_client)
     return render_template('index.html', data1=data_t1, data2=data_t2,
                            s1=folder_size1, s2=folder_size2, tc=true_c, wc=wrong_c, t=total,
                            r=r, last=last)
@@ -100,7 +101,8 @@ def check():
                 check_lr_num += 1
         books.append((check_lr_num, number))
     # print books
-    logging.info(str(ip), str(user_client), u'зашел на check')
+    logging.info(u'%s зашел на check'%ip)
+    logging.info(u'%s'%user_client)
     return render_template('check.html', books=books)
 
 
@@ -113,9 +115,10 @@ def start_create_marc():
     x = sb.Popen(['/bin/bash', '/home/helga/olgavr/marcapp/run.sh'], stdout=sb.PIPE, stderr=sb.PIPE)
     # line = x.stdout.readline()
     time.sleep(0.1)
-    logging.info(ip, u'скачал файл с главной', x.poll())
+    logging.info(u'%s скачал файл с главной'%ip)
+    logging.info(x.poll())
     if x.poll() == 3:
-        logging.debug(str(ip), str(user_client), u'Слишком часто нажимает!1')
+        logging.debug(u'%s Слишком часто нажимает!1'%ip)
         return json.dumps({'success': 'already running'}), 200, {'ContentType': 'application/json'}
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
@@ -174,7 +177,8 @@ def show_book(number):
     my_list_int = (int(result_count[0]) - 1) / 100
     ip = request.environ['REMOTE_ADDR']
     user_client = request.user_agent.string
-    logging.info(str(ip), str(user_client), u'Страница show %s' % number)
+    logging.info(u'%s Страница show %s' % (ip, number))
+    logging.info(u'%s'%user_client)
     h = hashlib.md5(number)
     md5 = h.hexdigest()
     user_client = hashlib.md5(user_client)
@@ -213,7 +217,8 @@ def update_book(number):
         connection.execute("COMMIT;")
     ip = request.environ['REMOTE_ADDR']
     user_client = request.user_agent.string
-    logging.info(str(ip), str(user_client), u'update %s'%number)
+    logging.info(u'%s update %s'%(ip,number))
+    logging.info(u'%s'%user_client)
     return redirect('/show/' + number)
 
 
@@ -305,7 +310,8 @@ def copy_book(number):
         connection.execute("COMMIT;")
     ip = request.environ['REMOTE_ADDR']
     user_client = request.user_agent.string
-    logging.info(str(ip), str(user_client), u'copy %s'%number)
+    logging.info(u'%s copy %s'%(ip,number))
+    logging.info(u'%s'%user_client)
     return redirect('/show/' + number)
 
 
@@ -386,7 +392,8 @@ def create_book(number):
         connection.execute("COMMIT;")
     ip = request.environ['REMOTE_ADDR']
     user_client = request.user_agent.string
-    logging.info(str(ip), str(user_client), u'create card %s'%number)
+    logging.info(u'%s create card %s'%(ip, number))
+    logging.info(u'%s'%user_client)
     return redirect('/show/' + number)
 
 
@@ -441,7 +448,7 @@ def excel(number):
     prev_number = int(number) - 1
     if prev_number < 0:
         prev_number = 0
-    logging.info(str(ip_curr), str(user_client_curr), u'Загрузили страницу list номер %s' % number)
+    logging.info(u'%s Загрузил страницу list номер %s' % (ip_curr,number))
     return render_template('show.html', excel=books, number1=next_number, number2=prev_number)
 
 
@@ -454,7 +461,8 @@ def make_marc(number):
     if request.method == 'POST':
         ip = request.environ['REMOTE_ADDR']
         user_client = request.user_agent.string
-        logging.info(str(ip), str(user_client), u'get marc file of %s card'%number)
+        logging.info(u'%s get marc file of %s card'%(ip,number))
+        logging.info(u'%s'%user_client)
         connection = engine.connect()
         connection.execute("SET character_set_connection=utf8")
         r = pymarc.Record(to_unicode=True, force_utf8=True)
@@ -502,9 +510,6 @@ def make_marc(number):
         name_number = '%0.5i' % int(number)
         response.headers["Content-Disposition"] = "attachment; filename=book%s.mrc" % name_number
         response.headers["Content-Type"] = "application/octet-stream"
-        ip = request.environ['REMOTE_ADDR']
-        user_client = request.user_agent.string
-        # print r
         return response
 
 
