@@ -12,8 +12,15 @@ import subprocess as sb
 import hashlib
 import logging
 
+logger = logging.getLogger()
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
 logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
-                    level=logging.DEBUG, filename=u'example.log')
+                     level=logging.DEBUG, filename=u'example.log')
 
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 
