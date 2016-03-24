@@ -2,7 +2,7 @@
 {% block body %}
 <p>• <a href="/">На стартовую страницу</a> • <a href="/list/47">На последнюю страницу списка</a> </p> <br />
   {% for ex in excel %}
-   <li class="excel"><a href="/show/{{ ex[0] }}" class="excel">{{ ex[0] }} {{ ex[1] }} {{ ex[2] }}</a> {{ex[3]}} <span style="color: #A63C18">{{ex[4]}}</span></li><br>
+   <li class="excel"><a href="/show/{{ ex[0] }}" class="excel">{{ ex[0] }} {{ ex[1] }} {{ ex[2] }}</a> {{ex[3]}} <span style="color: red">{{ex[4]}}</span><span style="color: blue; size: 20 px">{{ex[5]}}</span></li><br>
   {% endfor %}
 <div align="center"><a href="/list/0" style="color: #A63C18">Первая страница</a>  |  <a href="/list/{{ number2 }}" style="color: #A63C18">Предыдущая страница</a> | <a href="/list/{{ number1 }}" style="color: #A63C18">Следующая страница</a>  |  <a href="/list/47" style="color: #A63C18">Последняя страница</a></div>
 {% endblock %}

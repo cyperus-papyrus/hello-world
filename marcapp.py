@@ -4,12 +4,12 @@ from sqlalchemy import create_engine, MetaData
 from wtforms import Form, SubmitField, TextAreaField
 from wtforms.validators import DataRequired
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Table
 import re, pymarc, os, os.path, time, datetime, locale
 import string
 from flask import make_response
 from titles import overwrite_author
 import subprocess as sb
+import hashlib
 
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 
@@ -47,7 +47,6 @@ engine = create_engine('mysql://marc:123@localhost/marc?charset=utf8',
                        encoding='utf-8', convert_unicode=True)  # подключение к БД
 Session = sessionmaker(bind=engine)
 metadata = MetaData(bind=engine)
-aleph2 = Table('aleph2', metadata, autoload=True)
 
 
 @app.route('/')
@@ -165,6 +164,14 @@ def show_book(number):
     my_list_int = (int(result_count[0]) - 1) / 100
     print int(result_count[0])
     print datetime.datetime.now(), u'Загрузили страницу show %s' % number
+
+    h = hashlib.md5(number)
+    md5 = h.hexdigest()
+    ip = request.environ['REMOTE_ADDR']
+    user_client = request.user_agent.string
+    user_client = hashlib.md5(user_client)
+    user_client = user_client.hexdigest()
+    connection.execute("INSERT INTO ufollow(md5, ip, user_client, list_number) VALUES ('%s', '%s', '%s', '%s')" % (md5, ip, user_client, number))
     return render_template('show_entries.html', mybooks=zip(mybooks, excel),
                            excel=excel, form=form, litrescard=litrescard, int_lst=my_list_int)
 
@@ -374,24 +381,42 @@ def excel(number):
     for row in result.fetchall():
         excel.append(row)
     books = []
+    ip_curr = request.environ['REMOTE_ADDR']
+    user_client_curr = request.user_agent.string
+    user_client_curr = hashlib.md5(user_client_curr)
+    user_client_curr = user_client_curr.hexdigest()
+    print user_client_curr
     for element in excel:
         element0 = element[0]  # выделяем номер для поиска в базе excel2base
-        result1 = connection.execute("SELECT * FROM marc.excel2base WHERE (number='%s');" % element0)
         litresnum = '%0.6i' % int(element0) + 'Ru-MoLR'
         result2 = connection.execute("select * from aleph2 where (id='%s');" % litresnum)
         element = tuple(element)
         l = []
-        # if result1.fetchall() != l:
-        #     check_rgb = ('',)
-        # else:
-        #     check_rgb = (u'Нет найденных карточек!',)
+        result1 = connection.execute("select ip, user_client from marc.ufollow where (list_number='%s') and date > DATE_SUB(NOW(),INTERVAL 15 MINUTE) order by date desc;" % element0)
+        try:
+            row = result1.fetchone()
+            ip = row[0]
+            user_client = row[1]
+            print row
+        except TypeError:
+            ip = 0
+            user_client = 0
+        if user_client != 0 and ip != 0:
+            if user_client != user_client_curr and ip != ip_curr:
+                check_follow = (u' !!! Карточка в работе ✍',)
+            elif user_client != user_client_curr and ip == ip_curr:
+                check_follow = (u'',)
+            else:
+                check_follow = (u' Вы были тут (~15 минут назад) ✍',)
+        else:
+            check_follow = (u'',)
         if result2.fetchall() != l:
-            check_lr = (u'Книга обработана!',)
+            check_lr = (u'✓✓✓',)
             check_rgb = (u'',)
         else:
             check_rgb = (u'Нет найденных карточек!',)
             check_lr = (u'',)
-        books.append(element + check_lr + check_rgb)
+        books.append(element + check_lr + check_rgb + check_follow)
     # print books
     next_number = int(number) + 1
     if next_number > 56:
