@@ -12,8 +12,8 @@ import subprocess as sb
 import hashlib
 import logging
 
-logging.basicConfig(filename='example.log',level=logging.DEBUG,
-                    format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
+                    level=logging.DEBUG, filename=u'example.log')
 
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 
@@ -95,7 +95,7 @@ def check():
                 check_lr_num += 1
         books.append((check_lr_num, number))
     # print books
-    return render_template('check.html', books = books)
+    return render_template('check.html', books=books)
 
 
 @app.route('/create_marc_card', methods=['POST', 'GET'])
@@ -173,7 +173,8 @@ def show_book(number):
     user_client = request.user_agent.string
     user_client = hashlib.md5(user_client)
     user_client = user_client.hexdigest()
-    connection.execute("INSERT INTO ufollow(md5, ip, user_client, list_number) VALUES ('%s', '%s', '%s', '%s')" % (md5, ip, user_client, number))
+    connection.execute("INSERT INTO ufollow(md5, ip, user_client, list_number) VALUES ('%s', '%s', '%s', '%s')" % (
+    md5, ip, user_client, number))
     return render_template('show_entries.html', mybooks=zip(mybooks, excel),
                            excel=excel, form=form, litrescard=litrescard, int_lst=my_list_int)
 
@@ -393,7 +394,8 @@ def excel(number):
         result2 = connection.execute("select * from aleph2 where (id='%s');" % litresnum)
         element = tuple(element)
         l = []
-        result1 = connection.execute("select ip, user_client from marc.ufollow where (list_number='%s') and date > DATE_SUB(NOW(),INTERVAL 15 MINUTE) order by date desc;" % element0)
+        result1 = connection.execute(
+            "select ip, user_client from marc.ufollow where (list_number='%s') and date > DATE_SUB(NOW(),INTERVAL 15 MINUTE) order by date desc;" % element0)
         try:
             row = result1.fetchone()
             ip = row[0]
