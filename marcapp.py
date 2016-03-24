@@ -10,6 +10,10 @@ from flask import make_response
 from titles import overwrite_author
 import subprocess as sb
 import hashlib
+import logging
+
+logging.basicConfig(filename='example.log',level=logging.DEBUG,
+                    format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 
@@ -21,10 +25,8 @@ sql = u"""INSERT IGNORE INTO aleph2 (id, author, title, field, info, info_text)
 
 class MyForm(Form):
     card_lines = TextAreaField(validators=[DataRequired()])  # форма для отрисовки строк в карточках в базе aleph2
-    # litres = StringField(validators=[DataRequired()]) # форма для отрисовки новых, литресовских строк
-    # hidden = HiddenField('Field 1', validators=[DataRequired()])
     submit = SubmitField('Submit', validators=[DataRequired()])
-    copy = SubmitField('Copy card', validators=[DataRequired()])  # пока не работает
+    copy = SubmitField('Copy card', validators=[DataRequired()])
 
 
 def t(n):
@@ -385,7 +387,6 @@ def excel(number):
     user_client_curr = request.user_agent.string
     user_client_curr = hashlib.md5(user_client_curr)
     user_client_curr = user_client_curr.hexdigest()
-    print user_client_curr
     for element in excel:
         element0 = element[0]  # выделяем номер для поиска в базе excel2base
         litresnum = '%0.6i' % int(element0) + 'Ru-MoLR'
@@ -397,7 +398,6 @@ def excel(number):
             row = result1.fetchone()
             ip = row[0]
             user_client = row[1]
-            print row
         except TypeError:
             ip = 0
             user_client = 0
