@@ -430,16 +430,13 @@ def excel(number):
                 now = datetime.datetime.now()
                 date_time = str(date_time)
                 date_time2 = datetime.datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S')
-                logging.info(date_time2)
                 diff = now - date_time2
                 diff = int(diff.total_seconds()) / 60
-                if diff <= 0:
-                    check_follow = (u' На карточку кто-то зашел %s минут назад ✍'%diff,)
-                elif diff <= 1:
+                if diff <= 1:
                     check_follow = (u' На карточку кто-то зашел %s минутy назад ✍'%diff,)
                 elif diff <= 4:
                     check_follow = (u' На карточку кто-то зашел %s минуты назад ✍'%diff,)
-                elif diff <= 15:
+                elif diff <= 15 or diff == 0:
                     check_follow = (u' На карточку кто-то зашел %s минут назад ✍'%diff,)
                 else:
                     check_follow = (u' На карточку кто-то зашел (~15 минут назад) ✍',)
@@ -449,16 +446,13 @@ def excel(number):
                 now = datetime.datetime.now()
                 date_time = str(date_time)
                 date_time2 = datetime.datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S')
-                logging.info(date_time2)
                 diff = now - date_time2
                 diff = int(diff.total_seconds()) / 60
-                if diff >= 0:
-                    check_follow = (u' Вы были тут %s минут назад ✍'%diff,)
-                elif diff <= 1:
+                if diff <= 1:
                     check_follow = (u' Вы были тут %s минутy назад ✍'%diff,)
                 elif diff <= 4:
                     check_follow = (u' Вы были тут %s минуты назад ✍'%diff,)
-                elif diff <= 15:
+                elif diff <= 15 or diff == 0:
                     check_follow = (u' Вы были тут %s минут назад ✍'%diff,)
                 else:
                     check_follow = (u' Вы были тут (~15 минут назад) ✍',)
