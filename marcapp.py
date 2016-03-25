@@ -12,7 +12,7 @@ import subprocess as sb
 import hashlib
 import logging
 
-logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-6s [%(asctime)s]  %(message)s',
+logging.basicConfig(format=u'%(filename)s# %(levelname)-4s [%(asctime)s]  %(message)s',
                      level=logging.DEBUG, filename=u'example.log')
 
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
@@ -406,6 +406,9 @@ def excel(number):
     user_client_curr = user_client_curr.hexdigest()
     for element in excel:
         element0 = element[0]  # выделяем номер для поиска в базе excel2base
+        iscookie = request.cookies.get('number_%s'%element0)
+        if iscookie is not None:
+            logging.info(u'%s есть такая печенька!'%iscookie)
         litresnum = '%0.6i' % int(element0) + 'Ru-MoLR'
         result2 = connection.execute("select * from aleph2 where (id='%s');" % litresnum)
         element = tuple(element)
