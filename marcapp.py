@@ -79,7 +79,6 @@ def index():
 @app.route('/check_list')
 def check():
     ip = request.environ['REMOTE_ADDR']
-    user_client = request.user_agent.string
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
     books = []
@@ -102,14 +101,12 @@ def check():
         books.append((check_lr_num, number))
     # print books
     logging.info(u'%s зашел на check'%ip)
-    logging.info(u'%s'%user_client)
     return render_template('check.html', books=books)
 
 
 @app.route('/create_marc_card', methods=['POST', 'GET'])
 def start_create_marc():
     ip = request.environ['REMOTE_ADDR']
-    user_client = request.user_agent.string
     # d = ['python','run.sh']
     print "sstart "
     x = sb.Popen(['/bin/bash', '/home/helga/olgavr/marcapp/run.sh'], stdout=sb.PIPE, stderr=sb.PIPE)
@@ -219,9 +216,7 @@ def update_book(number):
                                     'info_text': info_text})
         connection.execute("COMMIT;")
     ip = request.environ['REMOTE_ADDR']
-    user_client = request.user_agent.string
     logging.info(u'%s update %s'%(ip,number))
-    logging.info(u'%s'%user_client)
     return redirect('/show/' + number)
 
 
@@ -312,9 +307,7 @@ def copy_book(number):
                                     'info_text': info_text})
         connection.execute("COMMIT;")
     ip = request.environ['REMOTE_ADDR']
-    user_client = request.user_agent.string
     logging.info(u'%s copy %s'%(ip,number))
-    logging.info(u'%s'%user_client)
     return redirect('/show/' + number)
 
 
@@ -394,9 +387,7 @@ def create_book(number):
                                     'info_text': info_text})
         connection.execute("COMMIT;")
     ip = request.environ['REMOTE_ADDR']
-    user_client = request.user_agent.string
     logging.info(u'%s create card %s'%(ip, number))
-    logging.info(u'%s'%user_client)
     return redirect('/show/' + number)
 
 
@@ -463,9 +454,7 @@ def make_marc(number):
     global tag1, tag2
     if request.method == 'POST':
         ip = request.environ['REMOTE_ADDR']
-        user_client = request.user_agent.string
         logging.info(u'%s get marc file of %s card'%(ip,number))
-        logging.info(u'%s'%user_client)
         connection = engine.connect()
         connection.execute("SET character_set_connection=utf8")
         r = pymarc.Record(to_unicode=True, force_utf8=True)
