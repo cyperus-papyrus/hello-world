@@ -186,8 +186,10 @@ def show_book(number):
     user_client = user_client.hexdigest()
     connection.execute("INSERT INTO ufollow(md5, ip, user_client, list_number, user_client_info) VALUES ('%s', '%s', '%s', '%s', '%s')" % (
     md5, ip, user_client, number, user_client_info))
-    return render_template('show_entries.html', mybooks=zip(mybooks, excel),
-                           excel=excel, form=form, litrescard=litrescard, int_lst=my_list_int)
+    resp = make_response(render_template('show_entries.html', mybooks=zip(mybooks, excel),
+                           excel=excel, form=form, litrescard=litrescard, int_lst=my_list_int))
+    resp.set_cookie('number_%s'%number)
+    return resp
 
 
 @app.route('/update/<number>', methods=['POST'])
