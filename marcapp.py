@@ -4,7 +4,7 @@ from sqlalchemy import create_engine, MetaData
 from wtforms import Form, SubmitField, TextAreaField
 from wtforms.validators import DataRequired
 from sqlalchemy.orm import sessionmaker
-import re, pymarc, os, os.path, time, locale
+import re, pymarc, os, os.path, time, locale, datetime
 import string
 from flask import make_response
 from titles import overwrite_author
@@ -414,21 +414,50 @@ def excel(number):
         element = tuple(element)
         l = []
         result1 = connection.execute(
-            "select ip, user_client from marc.ufollow where (list_number='%s') and date > DATE_SUB(NOW(),INTERVAL 15 MINUTE) order by date desc;" % element0)
+            "select ip, user_client, date from marc.ufollow where (list_number='%s') and date > DATE_SUB(NOW(),INTERVAL 15 MINUTE) order by date desc;" % element0)
         try:
             row = result1.fetchone()
             ip = row[0]
             user_client = row[1]
+            date_time = row[2]
+            logging.info(date_time)
         except TypeError:
             ip = 0
             user_client = 0
+            date_time = 0
         if user_client != 0 and ip != 0:
             if user_client != user_client_curr and ip != ip_curr:
-                check_follow = (u' На карточку кто-то зашел (~15 минут назад) ✍',)
+                now = datetime.datetime.now()
+                date_time = str(date_time)
+                date_time2 = datetime.datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S')
+                logging.info(date_time2)
+                diff = now - date_time2
+                diff = int(diff.total_seconds()) / 60
+                if diff <= 1:
+                    check_follow = (u' На карточку кто-то зашел %s минутy назад ✍'%diff,)
+                elif diff <= 4:
+                    check_follow = (u' На карточку кто-то зашел %s минуты назад ✍'%diff,)
+                elif diff <= 15:
+                    check_follow = (u' На карточку кто-то зашел %s минут назад ✍'%diff,)
+                else:
+                    check_follow = (u' На карточку кто-то зашел (~15 минут назад) ✍',)
             elif user_client != user_client_curr and ip == ip_curr:
                 check_follow = (u'',)
             else:
-                check_follow = (u' Вы были тут (~15 минут назад) ✍',)
+                now = datetime.datetime.now()
+                date_time = str(date_time)
+                date_time2 = datetime.datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S')
+                logging.info(date_time2)
+                diff = now - date_time2
+                diff = int(diff.total_seconds()) / 60
+                if diff <= 1:
+                    check_follow = (u' Вы были тут %s минутy назад ✍'%diff,)
+                elif diff <= 4:
+                    check_follow = (u' Вы были тут %s минуты назад ✍'%diff,)
+                elif diff <= 15:
+                    check_follow = (u' Вы были тут %s минут назад ✍'%diff,)
+                else:
+                    check_follow = (u' Вы были тут (~15 минут назад) ✍',)
         else:
             check_follow = (u'',)
         if result2.fetchall() != l:
