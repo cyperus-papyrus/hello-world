@@ -434,7 +434,6 @@ def excel(number):
             user_client = 0
             date_time = 0
             cookie = 0
-        logging.info('%s + %s' % (iscookie, cookie))
         if user_client != 0 and ip != 0:
             if cookie == iscookie:
                 now = datetime.datetime.now()
