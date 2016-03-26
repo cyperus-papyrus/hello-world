@@ -13,7 +13,7 @@ import hashlib
 import logging
 
 logging.basicConfig(format=u'%(filename)s# %(levelname)-4s [%(asctime)s]  %(message)s',
-                     level=logging.DEBUG, filename=u'example.log')
+                    level=logging.DEBUG, filename=u'example.log')
 
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 
@@ -70,7 +70,7 @@ def index():
     r = 4784
     last = int(r) - int(total)
     logging.info(u'%s зашел на главную страницу' % ip)
-    logging.info(u'%s'%user_client)
+    logging.info(u'%s' % user_client)
     return render_template('index.html', data1=data_t1, data2=data_t2,
                            s1=folder_size1, s2=folder_size2, tc=true_c, wc=wrong_c, t=total,
                            r=r, last=last)
@@ -100,7 +100,7 @@ def check():
                 check_lr_num += 1
         books.append((check_lr_num, number))
     # print books
-    logging.info(u'%s зашел на check'%ip)
+    logging.info(u'%s зашел на check' % ip)
     return render_template('check.html', books=books)
 
 
@@ -112,10 +112,10 @@ def start_create_marc():
     x = sb.Popen(['/bin/bash', '/home/helga/olgavr/marcapp/run.sh'], stdout=sb.PIPE, stderr=sb.PIPE)
     # line = x.stdout.readline()
     time.sleep(0.1)
-    logging.info(u'%s скачал файл с главной'%ip)
+    logging.info(u'%s скачал файл с главной' % ip)
     logging.info(x.poll())
     if x.poll() == 3:
-        logging.debug(u'%s Слишком часто нажимает!1'%ip)
+        logging.debug(u'%s Слишком часто нажимает!1' % ip)
         return json.dumps({'success': 'already running'}), 200, {'ContentType': 'application/json'}
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
@@ -175,18 +175,28 @@ def show_book(number):
     ip = request.environ['REMOTE_ADDR']
     user_client = request.user_agent.string
     logging.info(u'%s Страница show %s' % (ip, number))
-    logging.info(u'%s'%user_client)
+    logging.info(u'%s' % user_client)
     h = hashlib.md5(number)
     md5 = h.hexdigest()
     user_client_info = request.user_agent.string
     user_client = hashlib.md5(user_client)
     user_client = user_client.hexdigest()
-    connection.execute("INSERT INTO ufollow(md5, ip, user_client, list_number, user_client_info) VALUES ('%s', '%s', '%s', '%s', '%s')" % (
-    md5, ip, user_client, number, user_client_info))
-    resp = make_response(render_template('show_entries.html', mybooks=zip(mybooks, excel),
-                           excel=excel, form=form, litrescard=litrescard, int_lst=my_list_int))
-    resp.set_cookie('number_%s'%number)
-    return resp
+    iscookie = request.cookies.get('user')
+    if iscookie is not None:
+        logging.info(u'%s есть такая печенька!' % iscookie)
+        connection.execute(
+        "INSERT INTO ufollow(md5, ip, user_client, list_number, user_client_info, cookie) VALUES ('%s','%s', '%s', '%s', '%s', '%s')" % (
+            md5, ip, user_client, number, user_client_info, iscookie))
+        return render_template('show_entries.html', mybooks=zip(mybooks, excel),
+                                             excel=excel, form=form, litrescard=litrescard, int_lst=my_list_int)
+    else:
+        connection.execute(
+        "INSERT INTO ufollow(md5, ip, user_client, list_number, user_client_info, cookie) VALUES ('%s','%s', '%s', '%s', '%s', '%s')" % (
+            md5, ip, user_client, number, user_client_info, iscookie))
+        resp = make_response(render_template('show_entries.html', mybooks=zip(mybooks, excel),
+                                             excel=excel, form=form, litrescard=litrescard, int_lst=my_list_int))
+        resp.set_cookie('user', value='%s %s' % (datetime.datetime.now(), ip), max_age=84000000)
+        return resp
 
 
 @app.route('/update/<number>', methods=['POST'])
@@ -216,7 +226,7 @@ def update_book(number):
                                     'info_text': info_text})
         connection.execute("COMMIT;")
     ip = request.environ['REMOTE_ADDR']
-    logging.info(u'%s update %s'%(ip,number))
+    logging.info(u'%s update %s' % (ip, number))
     return redirect('/show/' + number)
 
 
@@ -307,7 +317,7 @@ def copy_book(number):
                                     'info_text': info_text})
         connection.execute("COMMIT;")
     ip = request.environ['REMOTE_ADDR']
-    logging.info(u'%s copy %s'%(ip,number))
+    logging.info(u'%s copy %s' % (ip, number))
     return redirect('/show/' + number)
 
 
@@ -387,7 +397,7 @@ def create_book(number):
                                     'info_text': info_text})
         connection.execute("COMMIT;")
     ip = request.environ['REMOTE_ADDR']
-    logging.info(u'%s create card %s'%(ip, number))
+    logging.info(u'%s create card %s' % (ip, number))
     return redirect('/show/' + number)
 
 
@@ -406,56 +416,75 @@ def excel(number):
     user_client_curr = user_client_curr.hexdigest()
     for element in excel:
         element0 = element[0]  # выделяем номер для поиска в базе excel2base
-        iscookie = request.cookies.get('number_%s'%element0)
-        if iscookie is not None:
-            logging.info(u'%s есть такая печенька!'%iscookie)
+        iscookie = request.cookies.get('user')
         litresnum = '%0.6i' % int(element0) + 'Ru-MoLR'
         result2 = connection.execute("select * from aleph2 where (id='%s');" % litresnum)
         element = tuple(element)
         l = []
         result1 = connection.execute(
-            "select ip, user_client, date from marc.ufollow where (list_number='%s') and date > DATE_SUB(NOW(),INTERVAL 15 MINUTE) order by date desc;" % element0)
+            "select ip, user_client, date, cookie from marc.ufollow where (list_number='%s') and date > DATE_SUB(NOW(),INTERVAL 15 MINUTE) order by date desc;" % element0)
         try:
             row = result1.fetchone()
             ip = row[0]
             user_client = row[1]
             date_time = row[2]
-            logging.info(date_time)
+            cookie = row[3]
         except TypeError:
             ip = 0
             user_client = 0
             date_time = 0
+            cookie = 0
+        logging.info('%s + %s' % (iscookie, cookie))
         if user_client != 0 and ip != 0:
-            if user_client != user_client_curr and ip != ip_curr:
+            if cookie == iscookie:
                 now = datetime.datetime.now()
                 date_time = str(date_time)
                 date_time2 = datetime.datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S')
                 diff = now - date_time2
                 diff = int(diff.total_seconds()) / 60
+                if diff == 0:
+                    diff = 1
                 if diff <= 1:
-                    check_follow = (u' На карточку кто-то зашел %s минутy назад ✍'%diff,)
+                    check_follow = (u' Вы были тут %s минутy назад ✍' % diff,)
                 elif diff <= 4:
-                    check_follow = (u' На карточку кто-то зашел %s минуты назад ✍'%diff,)
+                    check_follow = (u' Вы были тут %s минуты назад ✍' % diff,)
                 elif diff <= 15 or diff == 0:
-                    check_follow = (u' На карточку кто-то зашел %s минут назад ✍'%diff,)
-                else:
-                    check_follow = (u' На карточку кто-то зашел (~15 минут назад) ✍',)
-            elif user_client != user_client_curr and ip == ip_curr:
-                check_follow = (u'',)
-            else:
-                now = datetime.datetime.now()
-                date_time = str(date_time)
-                date_time2 = datetime.datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S')
-                diff = now - date_time2
-                diff = int(diff.total_seconds()) / 60
-                if diff <= 1:
-                    check_follow = (u' Вы были тут %s минутy назад ✍'%diff,)
-                elif diff <= 4:
-                    check_follow = (u' Вы были тут %s минуты назад ✍'%diff,)
-                elif diff <= 15 or diff == 0:
-                    check_follow = (u' Вы были тут %s минут назад ✍'%diff,)
+                    check_follow = (u' Вы были тут %s минут назад ✍' % diff,)
                 else:
                     check_follow = (u' Вы были тут (~15 минут назад) ✍',)
+            else:
+                if user_client == user_client_curr and ip == ip_curr:
+                    now = datetime.datetime.now()
+                    date_time = str(date_time)
+                    date_time2 = datetime.datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S')
+                    diff = now - date_time2
+                    diff = int(diff.total_seconds()) / 60
+                    if diff == 0:
+                        diff = 1
+                    if diff <= 1:
+                        check_follow = (u' Вы были тут %s минутy назад ✍' % diff,)
+                    elif diff <= 4:
+                        check_follow = (u' Вы были тут %s минуты назад ✍' % diff,)
+                    elif diff <= 15 or diff == 0:
+                        check_follow = (u' Вы были тут %s минут назад ✍' % diff,)
+                    else:
+                        check_follow = (u' Вы были тут (~15 минут назад) ✍',)
+                else:
+                    now = datetime.datetime.now()
+                    date_time = str(date_time)
+                    date_time2 = datetime.datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S')
+                    diff = now - date_time2
+                    diff = int(diff.total_seconds()) / 60
+                    if diff == 0:
+                        diff = 1
+                    if diff <= 1:
+                        check_follow = (u' На карточку кто-то зашел %s минутy назад ✍' % diff,)
+                    elif diff <= 4:
+                        check_follow = (u' На карточку кто-то зашел %s минуты назад ✍' % diff,)
+                    elif diff <= 15 or diff == 0:
+                        check_follow = (u' На карточку кто-то зашел %s минут назад ✍' % diff,)
+                    else:
+                        check_follow = (u' На карточку кто-то зашел (~15 минут назад) ✍',)
         else:
             check_follow = (u'',)
         if result2.fetchall() != l:
@@ -472,8 +501,15 @@ def excel(number):
     prev_number = int(number) - 1
     if prev_number < 0:
         prev_number = 0
-    logging.info(u'%s Загрузил страницу list номер %s' % (ip_curr,number))
-    return render_template('show.html', excel=books, number1=next_number, number2=prev_number)
+    logging.info(u'%s Загрузил страницу list номер %s' % (ip_curr, number))
+    iscookie = request.cookies.get('user')
+    if iscookie is not None:
+        logging.info(u'%s есть такая печенька!' % iscookie)
+        return render_template('show.html', excel=books, number1=next_number, number2=prev_number)
+    else:
+        resp = make_response(render_template('show.html', excel=books, number1=next_number, number2=prev_number))
+        resp.set_cookie('user', value='%s %s' % (datetime.datetime.now(), ip_curr), max_age=84000000)
+        return resp
 
 
 import StringIO
@@ -484,7 +520,7 @@ def make_marc(number):
     global tag1, tag2
     if request.method == 'POST':
         ip = request.environ['REMOTE_ADDR']
-        logging.info(u'%s get marc file of %s card'%(ip,number))
+        logging.info(u'%s get marc file of %s card' % (ip, number))
         connection = engine.connect()
         connection.execute("SET character_set_connection=utf8")
         r = pymarc.Record(to_unicode=True, force_utf8=True)
@@ -533,6 +569,11 @@ def make_marc(number):
         response.headers["Content-Disposition"] = "attachment; filename=book%s.mrc" % name_number
         response.headers["Content-Type"] = "application/octet-stream"
         return response
+
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return 'This page does not exist', 404
 
 
 if __name__ == '__main__':
