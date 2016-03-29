@@ -61,7 +61,11 @@ def do_create_marc():
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
     result = connection.execute(
-        text("SELECT id, field, info_text FROM marc.aleph2 WHERE id LIKE '%Ru-MoLR' ORDER BY ID, FIELD"))
+        text("SELECT a.id, a.field, a.info_text FROM excel as e join aleph2 as a on ( a.id = CONCAT(LPAD(e.number,6,'0'),'Ru-MoLR') 
+or a.id = CONCAT(LPAD(e.number,7,'0'),'Ru-MoLR')
+) 
+WHERE e.noexport is NULL
+ORDER BY a.ID, a.FIELD"))
     r = pymarc.Record(to_unicode=True, force_utf8=True)
     mypath = os.path.dirname(os.path.abspath(__file__))
     time_now = datetime.strftime(datetime.now(), "%H-%M-%S-%f")
