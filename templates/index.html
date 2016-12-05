@@ -6,11 +6,11 @@
     <p><a href="static/marc_cards.txt">Файл в формате TXT</a>, создан {{ data2 }}, {{ s2 }} байт</p>
 <br />
     <table align="center">
-        <tr><td>Всего книг:</td><td>{{ r }}</td></tr>
-        <tr><td>Из них готово:</td><td>{{  t  }}</td></tr>
+        <tr><td>Всего книг в задании:</td><td>{{ r }}</td></tr>
+        <tr><td>Книг на вывод:</td><td>{{  t  }}</td></tr>
         <tr><td>Карточек, прошедших валидацию:</td><td> {{ tc }} </td></tr>
         <tr><td><a href="/static/bad_marc_cards.txt">Невалидных карточек:</a></td><td> {{ wc }} </td></tr>
-        <tr><td>Осталось книг:</td><td>{{ last }}</td></tr>
+        <tr><td>Не выведено:</td><td>{{ last }}</td></tr>
     </table>
 <script type="text/javascript">
     $(function ()

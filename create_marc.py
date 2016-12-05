@@ -64,9 +64,9 @@ def do_create_marc():
             text("SELECT id FROM aleph3 group by id ORDER BY id;"))
     m_count = 0
     for item in res.fetchall():
-        print item
+        print item[0]
         result = connection.execute(
-           text("SELECT id, field, info FROM aleph3 where (id='(%s)') ORDER BY id, field"%item))
+           text("SELECT id, field, info FROM aleph3 where (id='%s') ORDER BY id, field"%item[0]))
         print result.fetchone()
         r = pymarc.Record(to_unicode=True, force_utf8=True)
         mypath = os.path.dirname(os.path.abspath(__file__))
