@@ -18,13 +18,13 @@ logging.basicConfig(format=u'%(filename)s# %(levelname)-4s [%(asctime)s]  %(mess
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 
 app = Flask(__name__)
-sql = u"""INSERT IGNORE INTO aleph2 (id, author, title, field, info, info_text)
+sql = u"""INSERT IGNORE INTO aleph3 (id, author, title, field, info, info_text)
         VALUES (%(id)s, %(author)s, %(title)s,%(field)s,%(info)s,%(info_text)s)
         """
 
 
 class MyForm(Form):
-    card_lines = TextAreaField(validators=[DataRequired()])  # форма для отрисовки строк в карточках в базе aleph2
+    card_lines = TextAreaField(validators=[DataRequired()])  # форма для отрисовки строк в карточках в базе aleph3
     submit = SubmitField('Submit', validators=[DataRequired()])
     copy = SubmitField('Copy card', validators=[DataRequired()])
 
@@ -83,7 +83,7 @@ def check():
     connection.execute("SET character_set_connection=utf8")
     books = []
     for number in xrange(0, 48):
-        result = connection.execute('select number, name from excel order by number limit %s00,100;' % number)
+        result = connection.execute('select id, title from parser_cards order by id limit %s00,100;' % number)
         excel = []
         check_lr_num = 0
         for row in result.fetchall():
@@ -91,7 +91,7 @@ def check():
         for element in excel:
             element0 = element[0]
             litresnum = '%0.6i' % int(element0) + 'Ru-MoLR'
-            result2 = connection.execute("select * from aleph2 where (id='%s');" % litresnum)
+            result2 = connection.execute("select * from aleph3 where (id='%s');" % litresnum)
             l = []
             if result2.fetchall() != l:
                 check_lr = (u'Книга обработана!',)
@@ -124,7 +124,7 @@ def start_create_marc():
 def show_book(number):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
-    result = connection.execute("select * from excel where (number='%s');" % number)  # забираем строчку задания
+    result = connection.execute("select * from parser_cards where (id='%s');" % number)  # забираем строчку задания
     excel = []
     form = MyForm(request.form)
     for row1 in result.fetchall():
@@ -141,7 +141,7 @@ def show_book(number):
     books = []  # в этом списке лежат id на все книги (001 и 003 поля)
     for element in excel:
         element = element[0]  # выделяем номер для поиска в базе excel2base
-        result = connection.execute("SELECT * FROM marc.excel2base WHERE (number='%s');" % element)
+        result = connection.execute("SELECT * FROM marc.parse2base WHERE (number='%s');" % element)
         ids = []
         for row in result.fetchall():
             idaleph = row[0]  # из всех найденных строк выделяем idaleph и отправляем в список ids
@@ -153,9 +153,9 @@ def show_book(number):
     for book in books:
         mymulti_cards = []
         for one_card in book:
-            result = connection.execute("SELECT * FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD " % one_card)
+            result = connection.execute("SELECT * FROM marc.aleph3 WHERE (id='%s') ORDER BY FIELD " % one_card)
             myone_card = []
-            for row in result.fetchall():  # делаем словарь - одна строка из таблицы aleph2
+            for row in result.fetchall():  # делаем словарь - одна строка из таблицы aleph3
                 row = dict(id=row[0], author=row[1], title=row[2], field='%-5s' % row[3], info=row[5], num=n)
                 myone_card.append(row)  # словарь кладем в myone_card - это одна карточка на одну книгу
                 n += 1
@@ -167,10 +167,10 @@ def show_book(number):
     litrescard = []  # из карточек для каждой книги находим самую длинную и сохраняем ее
     litresnum = '%0.6i' % int(number) + 'Ru-MoLR'
     result = connection.execute(
-        "SELECT id, author, title, field, info_text FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD " % litresnum)
+        "SELECT id, author, title, field, info_text FROM marc.aleph3 WHERE (id='%s') ORDER BY FIELD " % litresnum)
     for (id, author, title, field, info_text) in result.fetchall():
         litrescard.append(dict(field='%-5s' % field, info=info_text))
-    (result_count,) = connection.execute("select count(*) from excel e where e.number<=%s order by number" % number)
+    (result_count,) = connection.execute("select count(*) from parser_cards e where e.id<=%s order by id" % number)
     my_list_int = (int(result_count[0]) - 1) / 100
     ip = request.environ['REMOTE_ADDR']
     user_client = request.user_agent.string
@@ -203,13 +203,13 @@ def show_book(number):
 def update_book(number):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
-    r = connection.execute("select author,name from excel where (number='%s');" % number)  # забираем строчку задания
+    r = connection.execute("select author,title from parser_cards where (id='%s');" % number)  # забираем строчку
     (author, name) = r.fetchone()
     form = MyForm(request.form)  # объявляем формы из класса выше
     if request.method == 'POST':
         litresnum = '%0.6i' % int(number) + 'Ru-MoLR'
         connection.execute("START TRANSACTION;")
-        connection.execute("DELETE FROM aleph2 WHERE  id=%(id)s",
+        connection.execute("DELETE FROM aleph3 WHERE id=%(id)s",
                            {'id': litresnum})
         for line in form.card_lines.data.split('\n'):
             line = re.sub(u'\t', u'   ', line, 0)  # копипейст с сайта ргб могут быть табуляции
@@ -243,13 +243,13 @@ def copy_book(number):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
     r = connection.execute(
-        "select author, name, format, filename, isbn, pubhouse from excel where (number='%s');" % number)  # забираем строчку задания
-    (author, name, frmt, filename, isbn1, pubhouse) = r.fetchone()
+        "select author, title, isbn from parser_cards where (id='%s');" % number)  # забираем строчку задания
+    (author, name, isbn1) = r.fetchone()
     form = MyForm(request.form)  # объявляем формы из класса выше
     if request.method == 'POST':
         litresnum = '%0.6i' % int(number) + 'Ru-MoLR'
         connection.execute("START TRANSACTION;")
-        connection.execute("DELETE FROM aleph2 WHERE  id=%(id)s",
+        connection.execute("DELETE FROM aleph3 WHERE  id=%(id)s",
                            {'id': litresnum})
         lines = []
         # фильтруем
@@ -267,11 +267,8 @@ def copy_book(number):
             if t(line[:3]):
                 lines.append(line)
         mime_str = u'application/pdf'
-        if frmt == 'epub':
-            mime_str = u'application/epub+zip'
         litres_special.append(
-            u'8561    |a rsl.ru |f %s |n Российская государственная библиотека, Москва, РФ |q %s' % (
-                filename, mime_str))
+            u'8561    |a rsl.ru |n Российская государственная библиотека, Москва, РФ |q %s' % mime_str)
         isbn = re.sub('\r\n', u'', isbn1, 0, re.M)
         isbn = re.sub('"', u'', isbn, 0, re.M)
         isbn = re.sub(u', ', ',', isbn, 0, re.M)
@@ -335,17 +332,16 @@ def create_book(number):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
     r = connection.execute(
-        "select author, name, format, filename, isbn, pubhouse from excel where (number='%s');" % number)  # забираем строчку задания
-    (author, name, frmt, filename, isbn1, pubhouse) = r.fetchone()
+        "select author, title, isbn from parser_cards where (id='%s');" % number)  # забираем строчку задания
+    (author, name, isbn1) = r.fetchone()
     if request.method == 'POST':
         litresnum = '%0.6i' % int(number) + 'Ru-MoLR'
         connection.execute("START TRANSACTION;")
-        connection.execute("DELETE FROM aleph2 WHERE  id=%(id)s",
+        connection.execute("DELETE FROM aleph3 WHERE  id=%(id)s",
                            {'id': litresnum})
         lines = []
         # фильтруем
         litres_special.append(u'24510  |a %s |h [Электронный ресурс]' % name)
-        litres_special.append(u'260    |b %s ' % pubhouse)
         right_author = overwrite_author(author)
         litres_special.append(u'1001   |a %s' % right_author[0])
         for right_author1 in right_author[1:]:
@@ -370,11 +366,8 @@ def create_book(number):
         else:
             pass
         mime_str = u'application/pdf'
-        if frmt == 'epub':
-            mime_str = u'application/epub+zip'
         litres_special.append(
-            u'8561    |a rsl.ru |f %s |n Российская государственная библиотека, Москва, РФ |q %s' % (
-                filename, mime_str))
+            u'8561    |a rsl.ru |n Российская государственная библиотека, Москва, РФ |q %s' % mime_str)
         # добавляем спец. строчки
         lines.extend(litres_special)
         if int(number) > int(100000):
@@ -405,7 +398,7 @@ def create_book(number):
 def excel(number):
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
-    result = connection.execute('select number, author, name from excel order by number limit %s00,100;' % number)
+    result = connection.execute('select id, author, title from parser_cards order by id limit %s00,100;' % number)
     excel = []
     for row in result.fetchall():
         excel.append(row)
@@ -418,7 +411,7 @@ def excel(number):
         element0 = element[0]  # выделяем номер для поиска в базе excel2base
         iscookie = request.cookies.get('user')
         litresnum = '%0.6i' % int(element0) + 'Ru-MoLR'
-        result2 = connection.execute("select * from aleph2 where (id='%s');" % litresnum)
+        result2 = connection.execute("select * from aleph3 where (id='%s');" % litresnum)
         element = tuple(element)
         l = []
         result1 = connection.execute(
@@ -525,7 +518,7 @@ def make_marc(number):
         r = pymarc.Record(to_unicode=True, force_utf8=True)
         litresnum = '%0.6i' % int(number) + 'Ru-MoLR'
         result = connection.execute(
-            "SELECT field, info_text FROM marc.aleph2 WHERE (id='%s') ORDER BY FIELD " % litresnum)
+            "SELECT field, info_text FROM marc.aleph3 WHERE (id='%s') ORDER BY FIELD " % litresnum)
         for (field, info_text) in result.fetchall():
             field = u'%-5s' % field
             info = re.sub(u'^\s+', u'', info_text)
