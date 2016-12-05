@@ -60,58 +60,67 @@ def do_create_marc():
                            encoding='utf-8', convert_unicode=True, echo=True)  # подключение к БД
     connection = engine.connect()
     connection.execute("SET character_set_connection=utf8")
-    result = connection.execute(
-        text("SELECT a.id, a.field, a.info_text FROM excel as e join aleph2 as a on ( a.id = CONCAT(LPAD(e.number,6,'0'),'Ru-MoLR') or a.id = CONCAT(LPAD(e.number,7,'0'),'Ru-MoLR')) WHERE e.noexport is NULL ORDER BY a.ID, a.FIELD")
-    r = pymarc.Record(to_unicode=True, force_utf8=True)
-    mypath = os.path.dirname(os.path.abspath(__file__))
-    time_now = datetime.strftime(datetime.now(), "%H-%M-%S-%f")
-    writer = pymarc.MARCWriter(open('%s/static/marc_cards_%s.mrc' % (mypath, time_now), 'wb'))
-    text_writer = io.open('%s/static/marc_cards_%s.txt' % (mypath, time_now), 'w', encoding='utf-8')
-    test = io.open('%s/static/bad_marc_cards_%s.txt' % (mypath, time_now), 'w', encoding='utf-8')
-    (id, field, info) = result.fetchone()
-    current_num = id
-    process_field(field, info, r)
-    count = 0
-    counter = 0
-
-    for (id, field, info) in result.fetchall():
-        if id == current_num:
-            process_field(field, info, r)
-        else:
-            current_num = id
-            test_string = StringIO.StringIO()
-            testwriter = pymarc.MARCWriter(test_string)
-            testwriter.write(r)
-            test1 = pymarc.MARCReader(test_string.getvalue(), to_unicode=True, force_utf8=True)
-            try:
-                for x in test1:
-                    count += 1
-            except UnicodeDecodeError:
-                counter += 1
+    res = connection.execute(
+            text("SELECT id FROM aleph3 group by id ORDER BY id;"))
+    m_count = 0
+    for item in res.fetchall():
+        print item
+        result = connection.execute(
+           text("SELECT id, field, info FROM aleph3 where (id='(%s)') ORDER BY id, field"%item))
+        print result.fetchone()
+        r = pymarc.Record(to_unicode=True, force_utf8=True)
+        mypath = os.path.dirname(os.path.abspath(__file__))
+        time_now = datetime.strftime(datetime.now(), "%H-%M-%S-%f")
+        writer = pymarc.MARCWriter(open('%s/static/marc_cards_%s.mrc' % (mypath, time_now), 'wb'))
+        text_writer = io.open('%s/static/marc_cards_%s.txt' % (mypath, time_now), 'w', encoding='utf-8')
+        test = io.open('%s/static/bad_marc_cards_%s.txt' % (mypath, time_now), 'w', encoding='utf-8')
+        (id, field, info) = result.fetchone()
+        current_num = id
+        print id, field, info
+        process_field(field, info, r)
+        count = 0
+        counter = 0
+        for (id, field, info) in result.fetchall():
+            if id == current_num:
+                process_field(field, info, r)
+            else:
+                print id
+                current_num = id
+                test_string = StringIO.StringIO()
+                testwriter = pymarc.MARCWriter(test_string)
+                testwriter.write(r)
+                test1 = pymarc.MARCReader(test_string.getvalue(), to_unicode=True, force_utf8=True)
+                try:
+                    for x in test1:
+                        count += 1
+                except UnicodeDecodeError:
+                        counter += 1
                 test.write(record2text(r) + u'\n\n\n')
-            testwriter.close()
-            writer.write(r)
-            text_writer.write(record2text(r) + u'\n\n\n')
-            r = pymarc.Record(to_unicode=True, force_utf8=True)
-            process_field(field, info, r)
-
-    else:
-        writer.write(r)
-        count += 1
-        text_writer.write(record2text(r))
-    writer.close()
-    text_writer.close()
-    test.close()
-    os.rename('%s/static/marc_cards_%s.mrc' % (mypath, time_now), '%s/static/marc_cards.mrc' % mypath)
-    os.rename('%s/static/marc_cards_%s.txt' % (mypath, time_now), '%s/static/marc_cards.txt' % mypath)
-    os.rename('%s/static/bad_marc_cards_%s.txt' % (mypath, time_now), '%s/static/bad_marc_cards.txt' % mypath)
+                testwriter.close()
+                writer.write(r)
+                text_writer.write(record2text(r) + u'\n\n\n')
+                r = pymarc.Record(to_unicode=True, force_utf8=True)
+                process_field(field, info, r)
+        else:
+             writer.write(r)
+             count += 1
+             text_writer.write(record2text(r))
+        writer.close()
+        text_writer.close()
+        test.close()
+        # os.rename('%s/static/marc_cards_%s.mrc' % (mypath, time_now), '%s/static/marc_cards.mrc' % mypath)
+        # os.rename('%s/static/marc_cards_%s.txt' % (mypath, time_now), '%s/static/marc_cards.txt' % mypath)
+        # os.rename('%s/static/bad_marc_cards_%s.txt' % (mypath, time_now), '%s/static/bad_marc_cards.txt' % mypath)
     print count
     print "Bad records counter:", counter
     total = int(count) + int(counter)
     num_file = open('%s/num_file.txt'%mypath, 'w')
     num_file.write(str(total) + u'\n' + str(count) + u'\n' + str(counter))
     num_file.close()
-    
+    m_count += 1
+    print m_count
+
+
 if __name__ == "__main__":
     do_create_marc()
     
